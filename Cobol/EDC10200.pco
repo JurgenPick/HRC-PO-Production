@@ -1,0 +1,4015 @@
+      ****************************************************************
+      *    System name          : Operation management               *
+      *    Sub system name      : Packaging yard control             *
+      *    Block name           : Gathering of Packaging records     *
+      *    Program name         : Printing Product Label(Export)     *
+      *    Operating server     : Control server                     *
+      *    Process type         : Real                               *
+      *    Specification Author : Yamada                             *
+      *    Program Author       : Chumpol S.                         *
+      *--------------------------------------------------------------*
+      *    Date-written         : 24.Apr.2000                        *
+      *                         : 20/JUL/2000 by Sugiyama            *
+      *                         : 04/OCT/2000 by Chumpol S.          *
+      *                         : 18/DEC/2000 by Chumpol S.  No320   *
+      *                         : 15/FEB/2008 by Veerayuth B.        *
+      ****************************************************************
+       IDENTIFICATION        DIVISION.
+       PROGRAM-ID.           EDC10200.
+
+
+       ENVIRONMENT           DIVISION.
+       CONFIGURATION         SECTION.
+       SOURCE-COMPUTER.      IBM.
+       OBJECT-COMPUTER.      IBM.
+
+
+       DATA                  DIVISION.
+
+       WORKING-STORAGE       SECTION.
+
+      ******-------------------------------------------------------***
+      *        DUMP START POINT                                      *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "            PDUMPDUMPSTR".
+       01  PUDUMPDUMPSTR                   PIC  X(08) VALUE "DUMPSTR ".
+      ******------------- Label format for Blue Scope--------------***
+       01  PBPOUTFORM-NAME-BS              PIC  X(16) VALUE SPACE.
+      ******-------------------------------------------------------***
+      *        SW  AREA                                              *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "                 SW-AREA".
+       01  XXXXXX-SW-AREA                  SYNC.
+         03        FILLER                  PIC  X(03) VALUE "1ST".
+         03        FILLER                  PIC  X(03) VALUE "NEG".
+         03      SWCHK                     PIC  X(03) VALUE "OK ".
+         03        FILLER                  PIC  X(02) VALUE "SS".
+         03      SWPRT                     PIC  X(03) VALUE "OK ".
+         03        FILLER                  PIC  X(03) VALUE "1ST".
+         03        FILLER                  PIC  X(03) VALUE "OFF".
+         03      SWABEND                   PIC  X(03) VALUE "OFF".
+
+
+      ******-------------------------------------------------------***
+      *        SUBSCRIPT  AREA                                       *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "          SUBSCRIPT-AREA".
+       01  XXXXXX-SUBSCRIPT-AREA           SYNC.
+         03      JED01                     PIC S9(04) COMP VALUE ZERO.
+         03      MDC00                     PIC S9(04) COMP VALUE ZERO.
+         03      Z0000                     PIC S9(04) COMP VALUE ZERO.
+
+
+      ******-------------------------------------------------------***
+      *        WORK  AREA                                            *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "               WORK-AREA".
+       01  WXBCP-WORK-AREA                 SYNC.
+      *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--Start
+      * product name  *
+      *  03      WWXBCP-LA-PR001           PIC X(40) VALUE SPACE.
+         03      WWXBCP-LA-PR001           PIC X(50) VALUE SPACE.
+      *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--End
+      * specification  *
+         03      WWXBCP-LA-PR004           PIC X(40) VALUE SPACE.
+      * size           *
+         03      WWXBCP-LA-PR003           PIC X(40) VALUE SPACE.
+      * inspection no  *
+         03      WWXBCP-PA-NO001.
+           05    WWXBCP-PA-1               PIC X(01) VALUE SPACE.
+           05      FILLER                  PIC X(01) VALUE "-".
+           05    WWXBCP-PA-2               PIC X(01) VALUE SPACE.
+           05      FILLER                  PIC X(01) VALUE "-".
+           05    WWXBCP-PA-3               PIC X(01) VALUE SPACE.
+           05      FILLER                  PIC X(01) VALUE "-".
+           05    WWXBCP-PA-4               PIC X(01) VALUE SPACE.
+           05      FILLER                  PIC X(01) VALUE "-".
+           05    WWXBCP-PA-5               PIC X(04) VALUE SPACE.
+
+
+      * net mass       *
+         03      WWXBCP-NT-LBS.
+           05    WWXBCP-NT-LBS-1           PIC Z9.
+           05    WWXBCP-NT-LBS-2           PIC X(01) VALUE SPACE.
+           05    WWXBCP-NT-LBS-3           PIC 9(3)  VALUE ZERO.
+           05    WWXBCP-NT-LBS-4           PIC X(04) VALUE SPACE.
+      * net mass       *
+         03      WWXBCP-NT-KG.
+           05    WWXBCP-NT-KG-1            PIC Z9.
+           05    WWXBCP-NT-KG-2            PIC X(01) VALUE SPACE.
+           05    WWXBCP-NT-KG-3            PIC 9(3)  VALUE ZERO.
+           05    WWXBCP-NT-KG-4            PIC X(04) VALUE SPACE.
+      * gross mass title *
+         03      WWXBCP-GS-TIL             PIC X(11) VALUE SPACE.
+      * gross mass       *
+         03      WWXBCP-GS-LBS.
+           05    WWXBCP-GS-LBS-1           PIC Z9.
+           05    WWXBCP-GS-LBS-2           PIC X(01) VALUE SPACE.
+           05    WWXBCP-GS-LBS-3           PIC 9(3)  VALUE ZERO.
+           05    WWXBCP-GS-LBS-4           PIC X(04) VALUE SPACE.
+      * gross mass       *
+         03      WWXBCP-GS-KG.
+           05    WWXBCP-GS-KG-1            PIC Z9.
+           05    WWXBCP-GS-KG-2            PIC X(01) VALUE SPACE.
+           05    WWXBCP-GS-KG-3            PIC 9(3)  VALUE ZERO.
+           05    WWXBCP-GS-KG-4            PIC X(04) VALUE SPACE.
+      * coil no        *
+      *--- memo1213 (CDCM final) by Songpol (15-Jun-2011) start ---*
+      *   03      WWXBCP-CC-NO001           PIC X(08).
+         03      WWXBCP-CC-NO001           PIC X(10).
+      *--- memo1213 (CDCM final) by Songpol (15-Jun-2011) end ---*
+      * charge title   *
+         03      WWXBCP-CHARGE             PIC X(10) VALUE SPACE.
+      * charge no      *
+         03      WWXBCP-CH-NO001           PIC X(08) VALUE SPACE.
+      * production date title  *
+         03      WWXBCP-PROD-DATE          PIC X(12).
+      * product date   *
+         03      WWXBCP-PR-EN001           PIC X(11).
+      * number         *
+         03      WWXBCP-NO                 PIC X(01) VALUE "1".
+      * LENGTH title   *
+         03      WWXBCP-LENGTH             PIC X(06) VALUE SPACE.
+      * length         *
+         03      WWXBCP-RE-CO001.
+           05    WWXBCP-RE-CO001-1         PIC ZZZZ9.
+           05      FILLER                  PIC X(01) VALUE "M".
+      * contract no  title  *
+         03      WWXBCP-CO-NO-TIL          PIC X(12) VALUE SPACE.
+      * contract no    *
+         03      WWXBCP-CO-NO001.
+           05    WWXBCP-CO-NO-1            PIC X(10) VALUE SPACE.
+           05      FILLER                  PIC X(01) VALUE "-".
+           05    WWXBCP-CO-NO-2            PIC X(02) VALUE SPACE.
+      * exp side title *
+         03      WWXBCP-EXP                PIC X(09) VALUE SPACE.
+      * exp. side      *
+         03      WWXBCP-EX-SI001           PIC X(01) VALUE SPACE.
+      * oil title      *
+         03      WWXBCP-OIL                PIC X(03) VALUE SPACE.
+      * oil            *
+         03      WWXBCP-OI-CL002           PIC X(01) VALUE SPACE.
+      * weld title     *
+         03      WWXBCP-WELD               PIC X(04) VALUE SPACE.
+      * weld           *
+         03      WWXBCP-NU-PR001           PIC X(01) VALUE SPACE.
+      * pin hole title *
+         03      WWXBCP-PINHOLE            PIC X(02) VALUE SPACE.
+      * ph             *
+         03      WWXBCP-RE-NU002           PIC X(02) VALUE SPACE.
+      * case no title  *
+         03      WWXBCP-CASE-TIL           PIC X(08) VALUE SPACE.
+      * case no        *
+         03      WWXBCP-CA-NO002           PIC X(07) VALUE SPACE.
+      * note 1         *
+         03      WWXBCP-LA-PR002.
+           05    WWXBCP-LA-PR002-1.
+            07   WWXBCP-LA-PR002-11        PIC X(20) VALUE SPACE.
+            07   WWXBCP-LA-PR002-12        PIC X(20) VALUE SPACE.
+           05    WWXBCP-LA-PR002-2         PIC X(40) VALUE SPACE.
+      * barcode-no-graph  *
+         03      WWXBCP-BARCODE            PIC X(12) VALUE SPACE.
+      * 2018 add by Onuma T. for Automated warehouse
+         03      WWXBCP-BARCODE-D          PIC X(12) VALUE SPACE.
+      * 24/Jan/2002 by dang ***start
+      * add A,B,C on the end of barcode for product label checking
+         03      WK-BAR-TAIL               PIC X(01) VALUE SPACE.
+         03      WWXBCP-BARCODE-P          PIC X(12) VALUE SPACE.
+      * 24/Jan/2002 by dang ***stop
+      * barcode-no     *
+         03      WWXBCP-BAR-NO             PIC X(12) VALUE SPACE.
+      * country name   *
+         03      WWXBCP-EXP-LABEL          PIC X(16) VALUE SPACE.
+      * page no  *
+         03      WWXBCP-PAGE.
+           05    WWXBCP-PAGE-1.
+             07  WWXBCP-PAGE-1-N           PIC 9(02) VALUE ZERO.
+           05    WWXBCP-PAGE-2             PIC X(01) VALUE "/".
+           05    WWXBCP-PAGE-3.
+             07  WWXBCP-PAGE-3-N           PIC 9(02) VALUE ZERO.
+      * shipping mark  *
+         03      WWXBCP-SHIP-MARK.
+           05    WWXBCP-SHIP-MARK-1        PIC X(25) VALUE SPACE.
+           05    WWXBCP-SHIP-MARK-2        PIC X(25) VALUE SPACE.
+           05    WWXBCP-SHIP-MARK-3        PIC X(25) VALUE SPACE.
+           05    WWXBCP-SHIP-MARK-4        PIC X(25) VALUE SPACE.
+           05    WWXBCP-SHIP-MARK-5        PIC X(25) VALUE SPACE.
+           05    WWXBCP-SHIP-MARK-6        PIC X(25) VALUE SPACE.
+           05    WWXBCP-SHIP-MARK-7        PIC X(25) VALUE SPACE.
+           05    WWXBCP-SHIP-MARK-8        PIC X(25) VALUE SPACE.
+      *--- 28/APR/2002 TIS by Witoon ------ START ---------------------*
+      * TIS specification *
+         03      WWXBCP-LA-PR019           PIC X(40) VALUE SPACE.
+      * edge condition *
+         03      WWXBCP-EDGE               PIC X(04) VALUE SPACE.
+         03      WWXBCP-FI-PR003           PIC X(01) VALUE SPACE.
+      *--- 28/APR/2002 TIS by Witoon ------ END -----------------------*
+
+      *--- 20100728 TIS-NAME by Onuma T.-- START ----------------------*
+      * TIS NAME   *
+         03      WWXBCP-TIS-NAME           PIC X(16) VALUE SPACE.
+      *--- 20100728 TIS-NAME by Onuma T.-- END ------------------------*
+
+      *--- 20201126 TIS-QR by Onuma T.-- START ------------------------*
+      * TIS QR   *
+         03      WWXBCP-TIS-QR             PIC X(100) VALUE SPACE.
+      *--- 20201126 TIS-QR by Onuma T.-- END --------------------------*
+      *--- 20251119 P/O Coil type by Sahassawat IM.2567 --S*
+         03      WWXBCP-PRODUCT-TIS        PIC X(50) VALUE SPACES.
+      *--- 20251119 P/O Coil type by Sahassawat IM.2567 --E*
+      *--- 20251112 P/O Coil type check flag by Sahassawat IM.2567 --S*
+       01  WK-PRODUCT-DISPLAY
+         03  WK-SEARCH-COUNT               PIC 9(02) VALUE ZERO.
+
+       01  WK-IS-COIL-PO                   PIC 9(01) VALUE ZERO.
+      *--- 20251112 P/O Coil type check flag by Sahassawat IM.2567 --E*
+
+      *-- show TIS-NAME only TIS case by Onuma T. 20100909 START--------
+       01  WK-CHK-TIS-NAME                 PIC X(01) VALUE "0".
+      *-- show TIS-NAME only TIS case by Onuma T. 20100909 END. --------
+
+       01  XXXXXX-WORK-AREA-N              SYNC.
+         03      WW0000-NU-DA002           PIC 9(02) VALUE ZERO.
+
+         03      WWXBCP-PR-WE002.
+           05    WWXBCP-PR-1               PIC Z9.
+           05      FILLER                  PIC X(01) VALUE ",".
+           05    WWXBCP-PR-2               PIC 9(3) VALUE ZERO.
+      ******-- 17/Apr/1999 (MISS SHIPMENT)    START           >> --- *
+         03      WW008NU-LA001             PIC 9(2).
+      ***03      WW008NU-LA001             PIC 9(1).
+      ******-- 17/Apr/1999 (MISS SHIPMENT)     END            >> --- *
+       01  WK-AREA-DATA-1                  SYNC.
+         03      WW000NT-WE000             PIC S9(05)  COMP-3.
+         03      WW000GR-WE000             PIC S9(05)  COMP-3.
+       01  XXXXXX-WORK-AREA-2              SYNC.
+         03      WW0000-CK-DATA01        PIC X(01) VALUE SPACE.
+         03      WW0000-OUT-COUNT-WK     PIC S9(02) COMP-3 VALUE ZERO.
+
+      *--- 08/MAY/2002 TIS by Witoon ---------------------- START -----*
+      * 01  WW0000-SIZE                    PIC X(40).
+       01  WW0000-TIS-SPEC.
+         03  FILLER                       PIC X(09) VALUE "TIS 2012 ".
+         03  WW0000-TIS-SPEC-1            PIC X(04) VALUE SPACE.
+         03  FILLER                       PIC X(01) VALUE "-".
+         03  WW0000-TIS-SPEC-2            PIC X(01) VALUE SPACE.
+      *--- 08/MAY/2002 TIS by Witoon ---------------------- START -----*
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+       01  WWXBCP-SIZE                  PIC X(12) VALUE SPACE.
+       01  WWXBCP-PA-SMALL              PIC X(08) VALUE SPACE.
+       01  WWXBCP-REJ                   PIC X(03) VALUE SPACE.
+       01  WW0000-AP-PR001              PIC X(08).
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+
+      *----- 11/01/2019 Memo No.1960 by Natchaya P.-------- Start --- *
+       01  WW0000-TIS-SPEC-A         PIC X(09) VALUE SPACE.
+       01  WW0000-TIS-SPEC-CHK       PIC X(01) VALUE "0".
+      *----- 11/01/2019 Memo No.1960 by Natchaya P.--------  End  --- *
+
+      ******-------------------------------------------------------***
+      *        PARAMATER AREA                                        *
+      ******-------------------------------------------------------***
+      *WXUDUMP   PARAMATER  AREA
+       01          FILLER  PIC  X(24) VALUE "            WXUDUMP-AREA".
+       COPY  "WWWPDUMP.CPY".
+
+      *WXMSSEND  PARAMATER  AREA
+       01          FILLER  PIC  X(24) VALUE "           WXMSSEND-AREA".
+       COPY  "WWWPSSND.CPY".
+
+      *WXBCPOUT  PARAMATER  AREA
+       01          FILLER  PIC  X(24) VALUE "           WWWPBOUT.CPY".
+       COPY  "WWWPBOUT.CPY".
+      *----<< Change by Chumpol  15/Sep/2000 >>------------*
+      *01  PBPOUTSEND-DATA                 PIC X(676) VALUE SPACE.
+      ** 24/Jan/2002 by dang***start
+      *01  PBPOUTSEND-DATA                 PIC X(689) VALUE SPACE.
+      *01  PBPOUTSEND-DATA                 PIC X(705) VALUE SPACE.
+      *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
+      * 01  PBPOUTSEND-DATA                 PIC X(800) VALUE SPACE.
+      *--- 28/APR/2002 TIS by Witoon ------------ END -----------------*
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+      *01  PBPOUTSEND-DATA                 PIC X(850) VALUE SPACE.
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+      *-- 20201210 TIS-QR by Onuma T. start
+      *01  PBPOUTSEND-DATA                 PIC X(950) VALUE SPACE.
+      *-- 20201210 TIS-QR by Onuma T. end.
+      *--- 20251119 P/O Coil type by Sahassawat IM.2567 --S*
+       01  PBPOUTSEND-DATA                 PIC X(1050) VALUE SPACE.
+      *--- 20251119 P/O Coil type by Sahassawat IM.2567 --E*
+
+      ** 24/Jan/2002 by dang***stop
+      *DWWCOM01 PARAMATER  AREA                       16=
+       01          FILLER  PIC  X(24) VALUE "           DWWCOM01-AREA".
+       COPY  "DWWP001.CPY"  REPLACING  ==:ZZZZ:==  BY  ==WWW001==.
+
+      *WWWRECON PARAMATER  AREA
+       01  FILLER  PIC X(24)          VALUE "           WWWRECON-AREA".
+       COPY  "WWWRECON.CPY".
+
+      ******-------------------------------------------------------***
+      *        MQ  FUNCTION  PARAMATER  AREA                         *
+      ******-------------------------------------------------------***
+      *----------------------------------------------------------------*
+      * Project Name : SPCS Revamp
+      * Reason : Oracle/MQ Connect : Environment Variable
+      * Updated Date : 2016/06/16
+      * Reviser : S.Kan NSSOL nanken
+      *----------------------------------------------------------------*
+       01      MQQMGR                      PIC X(08) VALUE SPACES.
+
+      *EDCM0001             AREA
+       01          FILLER  PIC  X(24) VALUE "           EDCM0001-AREA".
+       COPY  "EDCM0001.CPY"  REPLACING  ==:ZZZZ:==  BY  ==MDC001==.
+
+      *WXQSREQ   PARAMATER  AREA
+       01  MDWW02DWWM001                   SYNC.
+         03      MDWW02-JUDGE              PIC  X(01).
+         03      MDWW02PA-CO001            PIC  X(08).
+
+
+      *WXQSVARS PARAMATER  AREA
+       01          FILLER  PIC  X(24) VALUE "           WXQSVARS-AREA".
+       COPY  "WXQSVARS.CPY".
+
+      *WXQSVARL PARAMATER  AREA
+       01          FILLER  PIC  X(24) VALUE "           WXQSVARL-AREA".
+       COPY  "WXQSVARL.CPY".
+
+
+      ******-------------------------------------------------------***
+      *         STARTUP  MSG  AREA                                   *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "       STARTUP-DATA-AREA".
+       01  STARTUP-DATA-AREA               SYNC.
+         03      STARTUP-ITEM              PIC  X(500).
+         03        FILLER                  PIC  X(1500).
+
+
+      ******-------------------------------------------------------***
+      *        ERROR-INF-SAVE-AREA                                   *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "     ERROR-INF-SAVE-AREA".
+       01  ERRINF-SAVE-AREA                SYNC.
+         03      WWORAC-SQLCODE            PIC  9(17) VALUE ZERO.
+
+
+      ******-------------------------------------------------------***
+      *        WXMSSEND  BODY  WORK  AREA                            *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "          EX0001-MSGBODY".
+       01  EX0001-MSGBODY                  SYNC.
+         03        FILLER                  PIC  X(08) VALUE "SQLCODE=".
+         03      EX0001-MSGBODY-1          PIC  9(06) VALUE ZERO.
+         03        FILLER                PIC  X(10) VALUE ",ERR-TEXT=".
+         03      EX0001-MSGBODY-2          PIC  X(70) VALUE SPACE.
+         03        FILLER                PIC  X(10) VALUE ",SQL-TEXT=".
+         03      EX0001-MSGBODY-3          PIC  X(70) VALUE SPACE.
+         03        FILLER            PIC  X(15) VALUE ",SQL-FILE-NAME=".
+         03      EX0001-MSGBODY-4          PIC  X(70) VALUE SPACE.
+
+
+       01          FILLER  PIC X(24) VALUE "          EX0003-MSGBODY".
+       01  EX0003-MSGBODY                  SYNC.
+         03        FILLER                  PIC  X(07) VALUE "ERRMSG=".
+         03      EX0003-MSGBODY-1          PIC  X(174) VALUE SPACE.
+
+       01          FILLER  PIC  X(24) VALUE "          EXWXQS-MSGBODY".
+       01  EXWXQS-MSGBODY                  SYNC.
+         03        FILLER                  PIC  X(07) VALUE "WXQSCC=".
+         03      EXWXQS-MSGBODY-1          PIC  X(01) VALUE SPACE.
+         03        FILLER                  PIC  X(08) VALUE ",WXQSRC=".
+         03      EXWXQS-MSGBODY-2          PIC  X(01) VALUE SPACE.
+         03        FILLER                 PIC  X(09) VALUE ",WXQSMSG=".
+         03      EXWXQS-MSGBODY-3          PIC  X(80) VALUE SPACE.
+
+      *PACKAGE COIL NO - PRODUCT LABEL REQUEST CLASSIFICATION
+       01          FILLER  PIC  X(24) VALUE "          EED011-MSGBODY".
+       01  EED011-MSGBODY                  SYNC.
+         03      EED011-DATA               OCCURS     050.
+           05    EED011PA-CO001            PIC  X(08).
+           05    EED011-S                  PIC  X(01).
+           05    EED011-CONST              PIC  X(01).
+           05    EED011-N                  PIC  X(01).
+           05    EED011-MSGBODY-1          PIC  X(29).
+      *    05    EED011-MSGBODY-2          PIC  X(20).
+      *    05    EED011-MSGBODY-3          PIC  X(70).
+
+
+      *RETURN-CODE - PACKAGE COIL NO
+       01          FILLER  PIC  X(24) VALUE "          EED013-MSGBODY".
+       01  EED013-MSGBODY                  SYNC.
+         03      EED013-DATA.
+           05    EED013-RCD                PIC  X(01) VALUE SPACE.
+           05      FILLER                  PIC  X(01) VALUE "-".
+           05    EED013PA-CO001            PIC  X(08) VALUE SPACE.
+
+      *RETURN-CODE - PACKAGE COIL NO
+       01          FILLER  PIC  X(24) VALUE "          EX0104-MSGBODY".
+       01  EX0104-MSGBODY                   SYNC.
+         03      EX0104-DATA.
+           05    EX0104-RCD                PIC  X(04) VALUE SPACE.
+           05      FILLER                  PIC  X(01) VALUE "-".
+           05    EX0104PA-CO001            PIC  X(08) VALUE SPACE.
+
+       01          FILLER  PIC  X(24) VALUE "          EX0104-MSGBODY".
+       01  WX0008-MSGBODY                   SYNC.
+         03      WX0008-DATA.
+           05    WX0008-PRTID              PIC  X(08) VALUE SPACE.
+           05      FILLER                  PIC  X(01) VALUE "-".
+           05    WX0008-RCD                PIC  X(04) VALUE SPACE.
+           05      FILLER                  PIC  X(01) VALUE "-".
+           05    WX0008PA-CO001            PIC  X(08) VALUE SPACE.
+
+       01          FILLER  PIC  X(24) VALUE "          WX0005-MSGBODY".
+       01  WX0005-MSGBODY    SYNC.
+         03        FILLER                 PIC  X(09) VALUE "SUB-CODE=".
+         03      WX0005-MSGBODY-1          PIC  X(08) VALUE SPACE.
+         03        FILLER             PIC  X(13) VALUE ",RETURN-CODE=".
+         03      WX0005-MSGBODY-2          PIC  X(01) VALUE SPACE.
+
+       01  FILLER  PIC X(24)       VALUE "          EX0144-MSGBODY".
+       01  EX0144-MSGBODY                                  SYNC.
+         03        FILLER               PIC X(12)  VALUE "RETURN-CODE=".
+         03      EX0144-MSGBODY-1       PIC X(01)  VALUE SPACE.
+         03        FILLER               PIC X(09)  VALUE ",SQLCODE=".
+         03      EX0144-MSGBODY-2       PIC S9(07) VALUE ZERO.
+
+      ******-- 23/Apr/1999 (MISS SHIPMENT)    START           >> --- *
+       01  FILLER  PIC X(24)       VALUE "          IED101-MSGBODY".
+       01  IED101-MSGBODY                                  SYNC.
+         03        FILLER               PIC X(19)
+                                        VALUE "Package Coil No. = ".
+         03      IED101-PA-CO001        PIC X(08)  VALUE SPACE.
+      ******-- 23/Apr/1999 (MISS SHIPMENT)     END            >> --- *
+
+      ******-------------------------------------------------------***
+      *        ORACLE  AREA                                          *
+      ******-------------------------------------------------------***
+           EXEC  SQL  BEGIN  DECLARE  SECTION    END-EXEC.
+
+       01  USER-PWD.
+      *----------------------------------------------------------------*
+      * Project Name : SPCS Revamp
+      * Reason : Oracle Connect : Argument -> Environment Variable
+      * Updated Date : 2016/06/16
+      * Reviser : S.Kan NSSOL nanken
+      *----------------------------------------------------------------*
+      *  03      USERID                  PIC  X(10) VALUE "SPCS      ".
+      *  03      PASSWORD                PIC  X(10) VALUE "SPCS      ".
+      *  03      DB-STRING               PIC  X(10) VALUE "SPCS_CS   ".
+         03      USERID                  PIC X(10) VALUE SPACES.
+         03      PASSWORD                PIC X(10) VALUE SPACES.
+         03      DB-STRING               PIC X(10) VALUE SPACES.
+      *--- 26/03/2004 Recovery Function By Mr. donladet (Ble) -START---*
+       01   WWDBSTATUS                   PIC  X(01) VALUE SPACE.
+
+
+      * 1279 test
+       01   DATIME                       PIC X(30) VALUE SPACE.
+
+
+       01  TBLXX001-AREA.
+      * Trouble maintenance by Chumpol on 18/AUG/2000
+      *   03      BXX001CO-NO002           PIC X(01).
+         03      BXX001NU-IS001           PIC S9(02) COMP-3.
+         03      BXX001PA-IN002           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI012           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI013           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI014           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI015           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI017           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI018           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI019           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI020           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI021           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI022           PIC X(01) VALUE SPACE.
+         03      BXX001EX-SI001           PIC X(01) VALUE SPACE.
+         03      BXX001LA-PR002           PIC X(80) VALUE SPACE.
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
+         03      BXX001NE-CL001           PIC X(01) VALUE SPACE.
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  END   >> --- *
+      *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
+         03      BXX001LA-PR019           PIC X(55) VALUE SPACE.
+         03      BXX001NE-DI043           PIC X(01) VALUE SPACE.
+         03      BXX001NE-DI044           PIC X(01) VALUE SPACE.
+         03      BXX001FI-PR003           PIC X(01) VALUE SPACE.
+      *--- 28/APR/2002 TIS by Witoon ----------- END -----------------*
+      *---- 11/12/2002 Memo No.505 by chunee -------------- Start --- *
+         03      BXX001HC-SP001           PIC X(10) VALUE SPACE.
+      *---- 11/12/2002 Memo No.505 by chunee -------------- End   --- *
+      *---- 24/JUN/2004 Memo No.619 by Salakchit----------- Start --- *
+         03      BXX001PA-ST003           PIC X(05) VALUE SPACE.
+      *---- 24/JUN/2004 Memo No.619 by Salakchit----------- End   --- *
+       01  TBLXX004-AREA.
+         03      BXX004CO-NO001           PIC X(12) VALUE SPACE.
+         03      BXX004OR-TH004           PIC X(01) VALUE SPACE.
+         03      BXX004CO-PA004           PIC X(01) VALUE SPACE.
+         03      BXX004EX-CL002           PIC X(01) VALUE SPACE.
+         03      BXX004PR-CL003           PIC X(01) VALUE SPACE.
+         03      BXX004GR-CL001           PIC X(02) VALUE SPACE.
+         03      BXX004RE-SH001           PIC X(200) VALUE SPACE.
+         03      BXX004US-CO003           PIC X(04) VALUE SPACE.
+         03      BXX004US-CO004           PIC X(04) VALUE SPACE.
+
+
+       01  TBLXX006-AREA.
+         03      BXX006PR-WE001    PIC  S9(2)V9(3) COMP-3 VALUE ZERO.
+         03      BXX006HC-NO001    PIC  X(10) VALUE SPACE.
+         03      BXX006CH-NO001    PIC  X(08) VALUE SPACE.
+
+       01  TBLXX019-AREA.
+         03      BXX019PA-MA001           PIC X(10).
+
+      *--- Memo 1035 by Salakchit N. (3-Jan-2012) START  ---*
+       01  TBLCE010-AREA.
+         03      BCE010-NE-MA001   PIC X(10) VALUE SPACE.
+         03      BCE010-IN-MA001   PIC X(10) VALUE SPACE.
+
+      *--- Memo 1035 by Salakchit N. (3-Jan-2012) END    ---*
+
+       01  TBLXX008-AREA.
+         03      BXX008PA-CO001           PIC X(08)  VALUE SPACE.
+         03      BXX008PR-RO010           PIC  S9(2) COMP-3 VALUE ZERO.
+         03      BXX008PR-LA001           PIC X(01)  VALUE SPACE.
+         03      BXX008PR-LA002           PIC X(01)  VALUE SPACE.
+         03      BXX008PR-WE002           PIC S9(5)V9(3) COMP-3.
+         03      BXX008PR-TH002           PIC S9(4)V9(3) COMP-3.
+         03      BXX008AC-CL001           PIC X(01)  VALUE SPACE.
+         03      BXX008ME-RE001           PIC X(01)  VALUE SPACE.
+         03      BXX008OR-PR001           PIC X(01)  VALUE SPACE.
+         03      BXX008LA-PR001           PIC X(80)  VALUE SPACE.
+         03      BXX008LA-PR004           PIC X(55)  VALUE SPACE.
+         03      BXX008LA-PR003           PIC X(55)  VALUE SPACE.
+         03      BXX008NU-LA001           PIC S9(01) COMP-3.
+         03      BXX008LA-PR002           PIC X(80)  VALUE SPACE.
+         03      BXX008DE-LO001           PIC X(12)  VALUE SPACE.
+         03      BXX008DE-LO009           PIC X(12)  VALUE SPACE.
+         03      BXX008PR-EN001           PIC X(11)  VALUE SPACE.
+         03      BXX008PR-SP003           PIC X(07)  VALUE SPACE.
+         03      BXX008GR-RE001           PIC X(01)  VALUE SPACE.
+         03      BXX008RE-CO001           PIC  S9(5) COMP-3 VALUE ZERO.
+         03      BXX008RE-NU002           PIC  S9(2) COMP-3 VALUE ZERO.
+         03      BXX008OI-CL002           PIC X(01)  VALUE  SPACE.
+         03      BXX008NU-PR001           PIC  S9(1) COMP-3 VALUE ZERO.
+         03      BXX008CA-NO002           PIC X(07)  VALUE SPACE.
+         03      BXX008GR-WE001           PIC S9(5)V9(3) COMP-3.
+         03      BXX008EX-CL001           PIC X(01)  VALUE SPACE.
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
+         03      BXX008PA-CA001           PIC X(01)  VALUE SPACE.
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  END   >> --- *
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- Start --- *
+         03      BXX008PR-IN002           PIC X(01)  VALUE SPACE.
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- End ----- *
+      *--- 09/MAY/2002 TIS by Witoon ----------------------- START ----*
+         03      BXX008PR-CL001           PIC X(01)  VALUE SPACE.
+      *--- 09/MAY/2002 TIS by Witoon ----------------------- END ------*
+      *--- 14/MAY/2009 ADD by Veerayuth MEMO1024 relabel---- START ----*
+         03      BXX008PR-LA004           PIC X(01)  VALUE '1'.
+      *--- 14/MAY/2009 ADD by Veerayuth MEMO1024 relabel---- END ------*
+      *--- 04/JUL/2013 SALAKCHIT FIX P_STYLE            ---- START ----*
+         03      BXX008PA-ST004           PIC X(05)  VALUE SPACE.
+      *--- 04/JUL/2013 SALAKCHIT FIX P_STYLE            ---- START ----*
+      * Onuma T. 20190513 Automated warehouse prj. QR Label START
+         03      BXX008RE-NE001           PIC X(01)  VALUE SPACE.
+         03      BXX008RE-ST003           PIC X(01)  VALUE SPACE.
+      * Onuma T. 20190513 Automated warehouse prj. QR Label END
+
+
+       01  TBLED007-AREA                             SYNC.
+         03      BED007PA-CO001            PIC X(08).
+         03      BED007LA-TI001            PIC S9(02)       COMP-3.
+         03      BED007RE-IN001            PIC X(14).
+         03      BED007RE-UP001            PIC X(14).
+         03      BED007RE-DE001            PIC X(14).
+         03      BED007AP-PR001            PIC X(08).
+         03      BED007CL-LO001            PIC X(08).
+         03      BED007BA-PR002            PIC X(08).
+         03      BED007LA-PR011            PIC X(40).
+         03      BED007LA-PR012            PIC X(40).
+         03      BED007LA-PR013            PIC X(40).
+         03      BED007LA-IN001            PIC X(12).
+         03      BED007LA-NE002            PIC X(10).
+         03      BED007LA-NE001            PIC X(10).
+         03      BED007LA-GR003            PIC X(11).
+         03      BED007LA-GR002            PIC X(10).
+         03      BED007LA-GR001            PIC X(10).
+      *--- memo1213 (CDCM final) by Songpol (15-Jun-2011) start ---*
+      *   03      BED007LA-CC001            PIC X(08).
+         03      BED007LA-CC001            PIC X(10).
+      *--- memo1213 (CDCM final) by Songpol (15-Jun-2011) end ---*
+         03      BED007LA-CH002            PIC X(10).
+         03      BED007LA-CH001            PIC X(08).
+         03      BED007LA-PR015            PIC X(12).
+         03      BED007LA-PR014            PIC X(11).
+         03      BED007LA-NU001            PIC X(01).
+         03      BED007LA-CO002            PIC X(06).
+         03      BED007LA-CO001            PIC X(06).
+         03      BED007LA-CO004            PIC X(12).
+         03      BED007LA-CO003            PIC X(13).
+         03      BED007LA-EX002            PIC X(09).
+         03      BED007LA-EX001            PIC X(01).
+         03      BED007LA-OI002            PIC X(03).
+         03      BED007LA-OI001            PIC X(01).
+         03      BED007LA-NU004            PIC X(04).
+         03      BED007LA-NU003            PIC X(01).
+         03      BED007LA-NU006            PIC X(02).
+         03      BED007LA-NU005            PIC X(02).
+         03      BED007LA-CA002            PIC X(08).
+         03      BED007LA-CA001            PIC X(07).
+         03      BED007LA-PR016            PIC X(40).
+         03      BED007LA-PR017            PIC X(40).
+         03      BED007LA-IN002            PIC X(12).
+         03      BED007LA-IN003            PIC X(12).
+         03      BED007LA-CO005            PIC X(16).
+         03      BED007LA-NU007            PIC X(05).
+         03      BED007LA-RE001            PIC X(25).
+         03      BED007LA-RE002            PIC X(25).
+         03      BED007LA-RE003            PIC X(25).
+         03      BED007LA-RE004            PIC X(25).
+         03      BED007LA-RE005            PIC X(25).
+         03      BED007LA-RE006            PIC X(25).
+         03      BED007LA-RE007            PIC X(25).
+         03      BED007LA-RE008            PIC X(25).
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+      *   03      BED007LA-FO001            PIC X(08).
+         03      BED007LA-FO001            PIC X(20).
+         03      BED007LA-SI001            PIC X(12).
+         03      BED007LA-RE009            PIC X(03).
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *--- 01/MAY/2002 TIS by Witoon ------------------------ START ---*
+         03      BED007LA-TI002            PIC X(01).
+         03      BED007LA-TI003            PIC X(40).
+         03      BED007LA-TI004            PIC X(01).
+      *--- 01/MAY/2002 TIS by Witoon ------------------------ END -----*
+      *--- 21/FEB/2005 TIS by YAMADA ----------------------------------*
+         03      BED007LA-TI005            PIC X(04).
+      *--- 15/MAY/2009 Version by Veerayuth----------------------------*
+         03      BED007LA-VE001            PIC X(02).
+      *--- 20100728 TIS-NAME by Onuma T. ----------------------*
+         03      BED007LA-VE002            PIC X(20).
+      *--- 20201126 TIS-QR by Onuma T. STA
+         03      BED007LA-VE003            PIC X(100).
+      *--- 20201126 TIS-QR by Onuma T. END.
+
+       01  WW0000-PA-NO001                PIC X(08).
+       01  WW0000-LOOP-COUNT              PIC S9(01) COMP-3.
+
+      *--- 22/JUN/2004 BY Salakchit MEMO. 619 --------------START -----*
+       01  WW0000-LOOP-BS                 PIC S9(01) COMP-3.
+      *--- 22/JUN/2004 BY Salakchit MEMO. 619 --------------END   -----*
+
+      *------------------------------- 04/OCT/2000 by Chumpol  FROM -*
+       01  WW0000-OUT-COUNT               PIC S9(02) COMP-3 VALUE ZERO.
+       01  WW0000-CL-LO001                PIC X(08).
+       01  WW0000-BA-PR002                PIC X(08).
+      *------------------------------- 04/OCT/2000 by Chumpol  TO   -*
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+       01  WW0000-SIZE                    PIC X(13) VALUE SPACE.
+       01  WW0000-REJ                     PIC X(03) VALUE SPACE.
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      * Onuma T. 20171106 Automated warehouse prj. QR Label TA
+       01  WW0000-YA-CO001                PIC X(02).
+      * Onuma T. 20171106 Automated warehouse prj. QR Label ND
+
+
+       01  WW0000-AREA-TEMP                   SYNC.
+      *    on 22/MAR/2000 BY CHUMPOL
+      *   03      WW0000-SYSDATE1           PIC  X(15)  VALUE SPACE.
+      *   03      WW0000-SYSDATE2           PIC  X(15)  VALUE SPACE.
+      *   03      WW0000-SYSDATE3           PIC  X(15)  VALUE SPACE.
+      *   03      WW0000-SYSDATE4           PIC  X(15)  VALUE SPACE.
+          03      WW0000-COILNO             PIC  X(08)  VALUE SPACE.
+          03      WW0000-DE-LO001           PIC  X(12)  VALUE SPACE.
+
+      *    EXEC  SQL  INCLUDE  WWWCOM95.CPY      END-EXEC.
+           EXEC  SQL  INCLUDE  WWWCOM96.CPY      END-EXEC.
+           EXEC  SQL  INCLUDE  WWWCOM66.CPY      END-EXEC.
+      *### EXEC  SQL  INCLUDE  WWWCOM92.CPY      END-EXEC.
+      *    EXEC  SQL  INCLUDE  TBLED007.CPY      END-EXEC.
+
+       01  PCOM92WWWCOM92                             SYNC.
+         03      PCOM92CL-LO001            PIC X(08).
+         03      PCOM92LA-PR001            PIC X(08).
+         03      PCOM92SE-PR001            PIC X(08).
+         03      PCOM92RE-CO002            PIC X(01).
+
+
+           EXEC  SQL  END  DECLARE  SECTION      END-EXEC.
+
+           EXEC  SQL  INCLUDE  SQLCA             END-EXEC.
+
+           EXEC  SQL  INCLUDE  ORACA             END-EXEC.
+
+           EXEC  ORACLE  OPTION (ORACA=YES)      END-EXEC.
+
+
+      ******-------------------------------------------------------***
+      *        DUMP  END  POINT                                      *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "            PDUMPDUMPEND".
+       01  PUDUMPDUMPEND                   PIC  X(08) VALUE "DUMPEND ".
+
+
+       LOCAL-STORAGE         SECTION.
+       01  INST-FLAGS                      PIC  X(01) VALUE SPACE.
+       01  INST-ADDRESS                    PROCEDURE-POINTER.
+       01  STATUS-CODE                     PIC  9(04) COMP  VALUE ZERO.
+
+
+       LINKAGE               SECTION.
+       01  OS-PARM                         SYNC.
+         03      PARM-LEN                  PIC  9(04) COMP.
+         03      CMD-LINE.
+           05    PARMPTR-TABLE             PIC  X(01)
+                                           OCCURS  1  TO  100
+                                           DEPENDING  ON  PARM-LEN.
+
+       01  ERR-MSG                         PIC X(325) SYNC.
+
+
+      /
+       PROCEDURE             DIVISION  USING  OS-PARM.
+      *----------------------------------------------------------------*
+      * Project Name : SPCS Revamp
+      * Reason : Oracle Connect : Argument -> Environment Variable
+      * Updated Date : 2016/06/16
+      * Reviser : S.Kan NSSOL nanken
+      *----------------------------------------------------------------*
+           DISPLAY "UID_PARM" UPON ENVIRONMENT-NAME.
+           ACCEPT USERID FROM ENVIRONMENT-VALUE.
+           DISPLAY "PWD_PARM" UPON ENVIRONMENT-NAME.
+           ACCEPT PASSWORD FROM ENVIRONMENT-VALUE.
+           DISPLAY "DBS_PARM" UPON ENVIRONMENT-NAME.
+           ACCEPT DB-STRING FROM ENVIRONMENT-VALUE.
+           DISPLAY "MQM_PARM" UPON ENVIRONMENT-NAME.
+           ACCEPT MQQMGR FROM ENVIRONMENT-VALUE.
+
+       A0-MAIN-PROCESS       SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     A0     MAIN  PROCESS                                *
+      *    *                                                         *
+      *    ***********************************************************
+
+       A0-100.
+           DISPLAY  "*****  EDC10200  START  *****".
+           PERFORM  B0-PRE-PROCESS.
+
+      *------------------------------- 20/JUL/2000 by Sugiyama FROM -*
+           IF  SWCHK  =  "OK "
+               PERFORM  C0-PROCESS  VARYING  MDC00  FROM  1  BY  1
+                        UNTIL  MDC00  >  WW0000-NU-DA002
+                           OR  SWABEND  =  "ERR"
+                           OR  MDC00  >  50
+           END-IF.
+      *------------------------------- 20/JUL/2000 by Sugiyama TO   -*
+           PERFORM  Z0-AFTER-PROCESS.
+           IF  SWABEND  =  "ERR"
+                PERFORM  Y0-ABEND-PROCESS
+           END-IF.
+
+       A0-900.
+           DISPLAY  "*****  EDC10200  END  *****".
+      *    * ----- <<      RTS  ERROR  PROC  END              >> --- *
+           MOVE  1                     TO  INST-FLAGS
+           SET   INST-ADDRESS          TO  ENTRY  "ERROR-PROC-EDC10200"
+           CALL  "CBL_ERROR_PROC"      USING  INST-FLAGS
+                                              INST-ADDRESS
+                                              RETURNING  STATUS-CODE
+           MOVE  ZERO                  TO  RETURN-CODE
+           CONTINUE.
+           GOBACK.
+           EXIT.
+
+      /
+       B0-PRE-PROCESS        SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     B0     PRE  PROCESS                                 *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " B0 SEC ".
+
+       B0-100.
+      *    * ----- <<      RTS  ERROR  PROC  START           >> --- *
+           MOVE  ZERO                  TO  INST-FLAGS
+           SET   INST-ADDRESS          TO  ENTRY  "ERROR-PROC-EDC10200"
+           CALL  "CBL_ERROR_PROC"      USING  INST-FLAGS
+                                              INST-ADDRESS
+                                              RETURNING  STATUS-CODE
+           MOVE  1                     TO  ORASTXTF
+
+      *    * ----- <<      MQ  DATA  INIT                     >> --- *
+           MOVE  "A"                   TO  WXQSMDSA
+           DISPLAY " WXQSINIT START "
+
+           PERFORM  WXQSINIT
+
+
+           IF  NOT ( WXQSCC           =    WXQS-INF-NORMAL )
+               MOVE  "EX000129"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               MOVE  "ERR"             TO  SWABEND
+               GO  TO  B0-900
+           END-IF
+
+      *    * ----- <<      MQ  DATA  GET                      >> --- *
+           MOVE  WXQSDIN               TO  MDC001EDCM0001
+
+      *    * ----- <<      MQ  DATA  TOTAL  COUNT             >> --- *
+           MOVE  MDC001NU-DA002        TO  WW0000-NU-DA002
+
+      *    * ----- <<      RDB  CONNECT                       >> --- *
+           MOVE  "1"                    TO  PRECONUSER-CHANGE
+           MOVE  USERID                 TO  PRECONUSER-ID
+           MOVE  PASSWORD               TO  PRECONPASSWORD
+           MOVE  DB-STRING              TO  PRECONDB-STRING
+           MOVE  WXQSTRMS               TO  PRECONCLIENT-NAME.
+
+           CALL  "WWWRECON"         USING   PRECONUSER-CHANGE
+                                            PRECONUSER-ID
+                                            PRECONPASSWORD
+                                            PRECONDB-STRING
+                                            PRECONCLIENT-NAME
+                                            PRECONRTN-CD
+                                            PRECONSQLCODE.
+           EVALUATE  PRECONRTN-CD
+               WHEN  ZERO
+                     CONTINUE
+               WHEN  OTHER
+                     MOVE  "EX000144"         TO  PSSENDMSGID
+                     PERFORM  V0-MSG-DIVIDE
+                     MOVE  "ERR"             TO  SWABEND
+                     GO  TO  B0-900
+           END-EVALUATE.
+
+
+             DISPLAY  " MQ DATA ="         MDC001EDCM0001(1:50).
+
+      *------------------------------- 20/JUL/2000 by Sugiyama FROM -*
+           DISPLAY  " WXQSTRMS ="  WXQSTRMS.
+           DISPLAY  " WXQSMODS ="  WXQSMODS.
+      *------------------------------- 20/JUL/2000 by Sugiyama TO   -*
+
+           MOVE   WXQSMODS  TO     WW0000-AP-PR001.
+
+           INITIALIZE  PCOM96WWWCOM96
+           INITIALIZE  EED011-MSGBODY
+
+      * define label type
+           MOVE  "1"                   TO  PCOM96LA-TY001
+
+           MOVE  WXQSTRMS              TO  PCOM96CL-LO001
+           MOVE  WXQSTRMS              TO  WW0000-CL-LO001
+
+
+           EXEC  SQL  EXECUTE
+              BEGIN
+                 WWWCOM96(:PCOM96LA-TY001,
+                          :PCOM96CL-LO001,
+                          :PCOM96BA-PR002,
+                          :PCOM96BA-PR004,
+                          :PCOM96BA-PR005,
+                          :PCOM96RE-CO002);
+              END;
+           END-EXEC
+
+
+           DISPLAY  "WWWCOM96-PCOM96BA-PR002 ="  PCOM96BA-PR002.
+           DISPLAY  "WWWCOM96-PCOM96BA-PR004 ="  PCOM96BA-PR004.
+           DISPLAY  "WWWCOM96-PCOM96BA-PR005 ="  PCOM96BA-PR005.
+
+           MOVE   PCOM96BA-PR002  TO  WW0000-BA-PR002
+
+      *------------------------------- 20/JUL/2000 by Sugiyama FROM -*
+           DISPLAY  "WWWCOM96-PCOM96RE-CO002 ="  PCOM96RE-CO002.
+
+           IF  NOT(PCOM96RE-CO002  =  ZERO)
+               IF  PCOM96RE-CO002 = "7"
+                   MOVE  "WEDC2015"          TO  PSSENDMSGID
+                   PERFORM  V0-MSG-DIVIDE
+                   MOVE  "ERR"               TO  SWCHK
+               ELSE
+                   MOVE  "WX000005"          TO  PSSENDMSGID
+                   MOVE  "WWWCOM96"          TO  WX0005-MSGBODY-1
+                   MOVE  PCOM96RE-CO002      TO  WX0005-MSGBODY-2
+                   PERFORM  V0-MSG-DIVIDE
+                   MOVE  "ERR"             TO  SWABEND
+               END-IF
+           END-IF.
+      *------------------------------- 20/JUL/2000 by Sugiyama TO   -*
+
+           CONTINUE.
+       B0-900.
+           EXIT.
+
+      /
+       C0-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     CO                                                  *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " C0 SEC ".
+
+       C0-100.
+      *     IF    MDC001STATUS(MDC00) =   SPACE
+      *       DISPLAY  "UnKnow Status"
+      *         GO  TO  C0-900
+      *     END-IF.
+           IF    MDC001PA-NO001(MDC00) =   SPACE
+               GO  TO  C0-900
+           END-IF.
+           IF    MDC001PR-LA003(MDC00) =   "9"
+               GO  TO  C0-900
+           END-IF.
+
+      *    * log coil no *
+             DISPLAY  " COIL NO ="    MDC001PA-NO001(MDC00).
+
+             MOVE  MDC001PA-NO001(MDC00)  TO  WW0000-COILNO.
+
+      *    * -----E-*
+
+      *    * ----- <<       SELECT                            >> --- *
+           MOVE  MDC001PA-NO001(MDC00) TO  WW0000-PA-NO001
+           EXEC  SQL
+              SELECT   PA_CO001
+                      ,NVL(PR_RO010,'0')
+                      ,NVL(PR_LA001,' ')
+                      ,PR_LA002
+                      ,PR_WE002
+                      ,PR_TH002
+                      ,AC_CL001
+                      ,ME_RE001
+                      ,NVL(LA_PR001,' ')
+                      ,NVL(LA_PR004,' ')
+                      ,NVL(LA_PR003,' ')
+                      ,NVL(NU_LA001,'0')
+                      ,NVL(LA_PR002,' ')
+                      ,OR_PR001
+                      ,SUBSTR(NVL(DE_LO001,'             '),1,12)
+                      ,SUBSTR(NVL(DE_LO009,'             '),1,12)
+                      ,NVL(TO_CHAR(PR_EN001,'DD/MON/YYYY'),' ')
+                      ,PR_SP003
+                      ,NVL(GR_RE001,' ')
+                      ,NVL(RE_CO001,'0')
+                      ,RE_NU002
+                      ,NVL(OI_CL002,' ')
+                      ,NU_PR001
+                      ,NVL(CA_NO002,' ')
+                      ,GR_WE001
+                      ,NVL(EX_CL001,' ')
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
+                      ,PA_CA001
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  END   >> --- *
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- Start --- *
+                      ,NVL(PR_IN002,' ')
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- End ----- *
+      *--- 09/MAY/2002 TIS by Witoon ----------------------- START ----*
+                      ,PR_CL001
+      *--- 09/MAY/2002 TIS by Witoon ----------------------- END ------*
+      *--- 14/MAY/2009 ADD by Veerayuth MEMO1024 relabel---- START ----*
+                      ,NVL(PR_LA004,'1')
+      *--- 14/MAY/2009 ADD by Veerayuth MEMO1024 relabel---- END ------*
+      *--- 04/JUL/2013 SALAKCHIT FIX P_STYLE            ---- START ----*
+                      ,PA_ST004
+      *--- 04/JUL/2013 SALAKCHIT FIX P_STYLE            ---- START ----*
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+                      ,replace(replace(LA_PR003,'mm',''),'XC','')
+                      ,NVL(RE_CA001,'   ')
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *-- 20190513 Automated warehouse prj. QR Label BY ONUMA T. START
+                      ,NVL(RE_NE001,'0')
+                      ,NVL(RE_ST003,'0')
+      *-- 20190513 Automated warehouse prj. QR Label BY ONUMA T. END
+                INTO  :BXX008PA-CO001,
+                      :BXX008PR-RO010,
+                      :BXX008PR-LA001,
+                      :BXX008PR-LA002,
+                      :BXX008PR-WE002,
+                      :BXX008PR-TH002,
+                      :BXX008AC-CL001,
+                      :BXX008ME-RE001,
+                      :BXX008LA-PR001,
+                      :BXX008LA-PR004,
+                      :BXX008LA-PR003,
+                      :BXX008NU-LA001,
+                      :BXX008LA-PR002,
+                      :BXX008OR-PR001,
+                      :BXX008DE-LO001,
+                      :BXX008DE-LO009,
+                      :BXX008PR-EN001,
+                      :BXX008PR-SP003,
+                      :BXX008GR-RE001,
+                      :BXX008RE-CO001,
+                      :BXX008RE-NU002,
+                      :BXX008OI-CL002,
+                      :BXX008NU-PR001,
+                      :BXX008CA-NO002,
+                      :BXX008GR-WE001,
+                      :BXX008EX-CL001,
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
+                      :BXX008PA-CA001,
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  END   >> --- *
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- Start --- *
+                      :BXX008PR-IN002,
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- End ----- *
+      *---09/MAY/2002 TIS by Witoon ------------------------ START ----*
+                      :BXX008PR-CL001,
+      *---09/MAY/2002 TIS by Witoon ------------------------ END ------*
+      *--- 14/MAY/2009 ADD by Veerayuth MEMO1024 relabel---- START ----*
+                      :BXX008PR-LA004,
+      *--- 14/MAY/2009 ADD by Veerayuth MEMO1024 relabel---- END ------*
+      *--- 04/JUL/2013 SALAKCHIT FIX P_STYLE            ---- START ----*
+                      :BXX008PA-ST004,
+      *--- 04/JUL/2013 SALAKCHIT FIX P_STYLE            ---- START ----*
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+                      :WW0000-SIZE,
+                      :WW0000-REJ,
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *-- 20190513 Automated warehouse prj. QR Label BY ONUMA T. START
+                      :BXX008RE-NE001,
+                      :BXX008RE-ST003
+      *-- 20190513 Automated warehouse prj. QR Label BY ONUMA T. END
+                FROM  TBLXX008
+               WHERE  PA_CO001         =  :WW0000-PA-NO001
+                 AND
+                      MA_ST001         =  '1'
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               ADD   1                 TO  JED01
+               DISPLAY " SQLCODE = " SQLCODE
+               MOVE  MDC001PA-NO001(MDC00) TO  EED011PA-CO001(JED01)
+               MOVE  MDC001PR-LA003(MDC00) TO  EED011-CONST(JED01)
+               MOVE  "PC NO ERROR                 ,"
+                                           TO  EED011-MSGBODY-1(JED01)
+               GO  TO  C0-900
+           END-EVALUATE
+
+           IF  NOT ( BXX008AC-CL001   =  "4" )
+            AND
+               BXX008ME-RE001         =  ZERO
+               ADD   1                 TO  JED01
+               MOVE  MDC001PA-NO001(MDC00)  TO  EED011PA-CO001(JED01)
+               MOVE  MDC001PR-LA003(MDC00)  TO  EED011-CONST(JED01)
+               MOVE  "NO WEIGHT PC NO ERROR       ,"
+                                           TO  EED011-MSGBODY-1(JED01)
+               GO  TO  C0-900
+           END-IF
+
+           IF  (MDC001PR-LA003(MDC00) = "1")
+           OR  (MDC001PR-LA003(MDC00) = "3")
+               CONTINUE
+           ELSE
+               ADD   1                 TO  JED01
+               MOVE  MDC001PA-NO001(MDC00) TO  EED011PA-CO001(JED01)
+               MOVE  MDC001PR-LA003(MDC00) TO  EED011-CONST(JED01)
+               MOVE  "LABEL REQUEST CLASS. ERROR  ,"
+                                           TO  EED011-MSGBODY-1(JED01)
+               GO  TO  C0-900
+           END-IF
+
+
+
+      *--- Memo 1035 by Salakchit N. (3-Jan-2012) START  ---*
+           IF (BXX008PA-CO001 (4:1) = "Z") THEN
+
+                EXEC  SQL
+                        SELECT NE_MA001,
+                               IN_MA001
+                        INTO   :BCE010-NE-MA001,
+                               :BCE010-IN-MA001
+                        FROM   TBLCE010
+                        WHERE  NE_MA001 = :BXX008PA-CO001
+                END-EXEC
+                EVALUATE  SQLCODE
+                WHEN  ZERO
+                        CONTINUE
+                WHEN  OTHER
+                        MOVE SPACE      TO BCE010-NE-MA001
+                        CONTINUE
+                END-EVALUATE
+
+            END-IF
+
+      *--- Memo 1035 by Salakchit N. (3-Jan-2012) END    ---*
+
+
+      *    * ----- <<       SELECT                            >> --- *
+           EXEC  SQL
+      *--- memo1213 (CDCM final) by Songpol (15-Jun-2011) start ---*
+      *        SELECT  PA_MA001
+              SELECT  RPAD(PA_MA001,10)
+      *--- memo1213 (CDCM final) by Songpol (15-Jun-2011) end -----*
+                INTO  :BXX019PA-MA001
+                FROM  TBLXX019
+               WHERE  CH_MA001         =  :BXX008PA-CO001
+                 AND  WE_RE003         = '1'
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               ADD   1                 TO  JED01
+               MOVE  MDC001PA-NO001(MDC00)
+                                       TO  EED011PA-CO001(JED01)
+               MOVE  MDC001PR-LA003(MDC00) TO  EED011-CONST(JED01)
+
+               MOVE  "CC NO. GET ERROR            ,"
+                                           TO  EED011-MSGBODY-1(JED01)
+               GO  TO  C0-900
+           END-EVALUATE
+
+      *    * ----- <<       SELECT CHARGE NO                  >> --- *
+
+           EXEC  SQL
+
+      *    * ----- <<      TBLXX006  TBLXX018  SELECT         >> --- *
+      *              SELECT  T13.HC_NO001,
+                     SELECT  T13.CH_NO001
+      *                INTO  :BXX006HC-NO001,
+                       INTO  :BXX006CH-NO001
+                      FROM  TBLXX018 T17,TBLXX006 T13
+                     WHERE  T17.MA_CO002  =  RTRIM(:BXX008PA-CO001)
+                       AND
+                            T17.PR_RO010  =  :BXX008PR-RO010
+                       AND
+                            T17.HC_NO001  =  T13.HC_NO001
+                       AND
+                            T17.WE_RE003  =  1
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               ADD   1                 TO  JED01
+               MOVE  MDC001PA-NO001(MDC00)
+                                       TO  EED011PA-CO001(JED01)
+               MOVE  MDC001PR-LA003(MDC00) TO  EED011-CONST(JED01)
+
+               MOVE  "CHARGE No. GET ERROR            ,"
+                                           TO  EED011-MSGBODY-1(JED01)
+               GO  TO  C0-900
+           END-EVALUATE
+
+           PERFORM  C11-PROCESS
+           IF  SWCHK  =  "OK "
+               IF  NOT  BXX008PR-LA002  =  "1"
+      *    * ----- <<       UPDATE                            >> --- *
+                   EXEC  SQL
+                      UPDATE  TBLXX008
+                         SET  PR_LA002     =  '1',
+                              PR_LA001     =  NULL,
+                              RE_UP001     =  SYSDATE,
+                              AP_PR001     =  'EDC10200'
+                       WHERE  PA_CO001     =  :WW0000-PA-NO001
+                         AND
+                              MA_ST001     =  '1'
+                   END-EXEC
+                   EVALUATE  SQLCODE
+                     WHEN  ZERO
+                       CONTINUE
+                     WHEN   OTHER
+                       ADD   1             TO  JED01
+                       MOVE  MDC001PA-NO001(MDC00)
+                                       TO  EED011PA-CO001(JED01)
+                       MOVE  MDC001PR-LA003(MDC00)
+                                       TO  EED011-CONST(JED01)
+                       MOVE  SQLERRMC      TO  EED011-MSGBODY-1(JED01)
+                       EXEC  SQL  ROLLBACK  END-EXEC
+                       GO  TO  C0-900
+                   END-EVALUATE
+               END-IF
+               DISPLAY  " WXQSMODS ="  WXQSMODS
+               IF NOT WXQSMODS =  "EDS10   "
+                  PERFORM  C2-PROCESS
+               END-IF
+           END-IF.
+      *    * ----- <<       COMMIT                            >> --- *
+           EXEC  SQL  COMMIT  END-EXEC
+
+           CONTINUE.
+       C0-900.
+           EXIT.
+
+      /
+       C11-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C11                                                 *
+      *    *                                                         *
+      *    ***********************************************************
+
+       C11-100.
+
+             DISPLAY  " C11-100  ".
+
+             MOVE  "OK "                 TO  SWCHK
+
+
+      ******--TIW     1998/11/25                             FROM  ***
+      ******--               TBLXX001 DATA GET                >> --- *
+           EXEC  SQL
+              SELECT   NU_IS001
+                      ,NVL(PA_IN002,' ')
+                      ,NE_DI012
+                      ,NE_DI013
+                      ,NE_DI014
+                      ,NE_DI015
+                      ,NE_DI017
+                      ,NE_DI018
+                      ,NE_DI019
+                      ,NE_DI020
+                      ,NE_DI021
+                      ,NE_DI022
+                      ,EX_SI001
+                      ,NVL(LA_PR002,' ')
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
+                      ,NE_CL001
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  END   >> --- *
+      *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
+                      ,NVL(LA_PR019,' ')
+                      ,NE_DI043
+                      ,NE_DI044
+                      ,FI_PR003
+      *--- 28/APR/2002 TIS by Witoon ------------ END -----------------*
+      *---- 11/12/2002 Memo No.505 by chunee -------------- Start --- *
+                      ,HC_SP001
+      *---- 11/12/2002 Memo No.505 by chunee -------------- End   --- *
+      *---- 11/12/2002 Memo No.505 by chunee -------------- Start --- *
+                      ,PA_ST003
+      *---- 11/12/2002 Memo No.505 by chunee -------------- End   --- *
+                INTO  :BXX001NU-IS001,
+                      :BXX001PA-IN002,
+                      :BXX001NE-DI012,
+                      :BXX001NE-DI013,
+                      :BXX001NE-DI014,
+                      :BXX001NE-DI015,
+                      :BXX001NE-DI017,
+                      :BXX001NE-DI018,
+                      :BXX001NE-DI019,
+                      :BXX001NE-DI020,
+                      :BXX001NE-DI021,
+                      :BXX001NE-DI022,
+                      :BXX001EX-SI001,
+                      :BXX001LA-PR002,
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
+                      :BXX001NE-CL001,
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  END   >> --- *
+      *--- 28/APR/2002 TIS by Witoon ------------ START --------------*
+                      :BXX001LA-PR019,
+                      :BXX001NE-DI043,
+                      :BXX001NE-DI044,
+                      :BXX001FI-PR003,
+      *--- 28/APR/2002 TIS by Witoon ------------ END ----------------*
+      *---- 11/12/2002 Memo No.505 by chunee -------------- Start --- *
+                      :BXX001HC-SP001,
+      *---- 11/12/2002 Memo No.505 by chunee -------------- End   --- *
+      *---- 24/JUN/2004 Memo No.619 by Salakchit----------- Start --- *
+                      :BXX001PA-ST003
+      *---- 24/JUN/2004 Memo No.619 by Salakchit----------- End   --- *
+                FROM  TBLXX001
+               WHERE  PR_SP003         =  :BXX008PR-SP003
+           END-EXEC
+      ******-- 23/Apr/1999 (MISS SHIPMENT)     END             >> --- *
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               ADD   1                 TO  JED01
+               DISPLAY " TBLXX001  SQLCODE = " SQLCODE
+               MOVE  MDC001PA-NO001(MDC00) TO  EED011PA-CO001(JED01)
+               MOVE  MDC001PR-LA003(MDC00) TO  EED011-CONST(JED01)
+               MOVE  "PR-SP003 NO ERROR           ,"
+                                           TO  EED011-MSGBODY-1(JED01)
+               GO  TO  C11-900
+           END-EVALUATE
+
+      *--- 20251112 Check coil is P/O type by Sahassawat IM.2567 --S*
+      *--- Check if coil is P/O type using EWWWCOM08 ---*
+       DISPLAY "========================================="
+       DISPLAY "DEBUG START: Label Selection"
+       DISPLAY "BXX008PA-CO001 = " BXX008PA-CO001
+       DISPLAY "BXX008PR-SP003 = " BXX008PR-SP003
+       DISPLAY "BXX008GR-RE001 = " BXX008GR-RE001
+       DISPLAY "BXX008PR-CL001 = " BXX008PR-CL001
+       DISPLAY "BXX001NE-DI044 = " BXX001NE-DI044
+
+      *--- Check if coil is P/O type using EWWWCOM08  ---*
+           EXEC SQL
+              SELECT SPCS_DEV03.EWWCOM08(:BXX008PR-SP003)
+                INTO :WK-IS-COIL-PO
+                FROM DUAL
+           END-EXEC
+
+           IF SQLCODE NOT = ZERO
+              MOVE  "0"  TO  WK-IS-COIL-PO
+           END-IF.
+
+           DISPLAY "P/O Check Result: " WK-IS-COIL-PO
+                    " for PR-SP003: " BXX008PR-SP003
+      *--- 20251112 Check coil is P/O type by Sahassawat IM.2567 --E*
+
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
+      *    * ----- << MODIFY  06/JUN/2000  SUGIYAMA  START >> --- *
+
+           IF  BXX008GR-RE001  =  '1'
+             AND
+               BXX001NE-CL001  =  '1'
+             AND
+               BXX008PA-CA001  =  '0'  THEN
+               MOVE  'ERR'                 TO  SWCHK
+               MOVE  "WEDC2014"            TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               GO  TO  C11-900
+           END-IF.
+
+      * Trouble maintenance by Chumpol on 18/AUG/2000
+           IF  (BXX008GR-RE001  =  "2" OR "3" OR "4")
+               MOVE "0"                    TO BXX001NE-DI012
+                                              BXX001NE-DI013
+                                              BXX001NE-DI014
+                                              BXX001NE-DI015
+                                              BXX001NE-DI017
+                                              BXX001NE-DI018
+                                              BXX001NE-DI019
+                                              BXX001NE-DI020
+                                              BXX001NE-DI021
+                                              BXX001NE-DI022
+           END-IF.
+      * Trouble maintenance by Chumpol on 18/AUG/2000
+
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  END   >> --- *
+
+      *--- << TBLXX004 DATA GET                               >> --- *
+           IF  BXX008DE-LO001 = SPACE
+               MOVE  BXX008DE-LO009        TO  WW0000-DE-LO001
+           ELSE
+               MOVE  BXX008DE-LO001        TO  WW0000-DE-LO001
+           END-IF.
+
+           INITIALIZE  TBLXX004-AREA.
+           IF  BXX008OR-PR001 = '1'
+             OR
+               BXX008GR-RE001 = '1'
+               EXEC  SQL
+                   SELECT  OR_TH004,
+                           CO_PA004,
+                           EX_CL002,
+                           PR_CL003,
+                           NVL(GR_CL001,' '),
+                           NVL(RE_SH001,' '),
+                           US_CO003,
+                           NVL(US_CO004,' ')
+                     INTO  :BXX004OR-TH004,
+                           :BXX004CO-PA004,
+                           :BXX004EX-CL002,
+                           :BXX004PR-CL003,
+                           :BXX004GR-CL001,
+                           :BXX004RE-SH001,
+                           :BXX004US-CO003,
+                           :BXX004US-CO004
+                     FROM  TBLXX004
+                    WHERE  CO_NO001  = :WW0000-DE-LO001
+                END-EXEC
+
+      **** DISPLAY  "TBLXX004 SELECT SQLCODE = "  SQLCODE
+
+                EVALUATE  SQLCODE
+                    WHEN  ZERO
+                      CONTINUE
+                    WHEN  OTHER
+                      ADD   1                 TO  JED01
+                      DISPLAY " TBLXX004 SQLCODE = " SQLCODE
+                      MOVE  MDC001PA-NO001(MDC00)
+                                             TO  EED011PA-CO001(JED01)
+                      MOVE  MDC001PR-LA003(MDC00)
+                                             TO  EED011-CONST(JED01)
+                      MOVE  "CO-NO001 NO ERROR           ,"
+                                             TO  EED011-MSGBODY-1(JED01)
+                      GO  TO  C11-900
+                END-EVALUATE
+           END-IF.
+
+           INITIALIZE  PBPOUTPRINTER-ID
+                       PBPOUTFORM-NAME
+                       PBPOUTDATA-CNT
+                       PBPOUTSEND-DATA
+                       PBPOUTPRINT-NUM
+                       PBPOUTRTN-CODE.
+      *
+           MOVE  PCOM96BA-PR002        TO  PBPOUTPRINTER-ID
+      *     MOVE  "CPUBT001"             TO  PBPOUTPRINTER-ID
+
+      *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
+           IF (BXX008GR-RE001 = "2" OR "3" OR "4") THEN
+              IF (BXX008PR-CL001(1:1) = "B") THEN
+                 MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
+              ELSE
+      *--- 20251112 P/O determines by Sahassawat IM.2567 --S*
+                IF WK-IS-COIL-PO = '1' THEN
+                   MOVE  "LABEL-PT-TIS"          TO  PBPOUTFORM-NAME
+      *----------show TIS-NAME only TIS case by Onuma T. 20100909 START
+                   MOVE  "1" TO WK-CHK-TIS-NAME
+      *----------show TIS-NAME only TIS case by Onuma T. 20100909 END.
+                ELSE
+                   MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
+                END-IF
+      *--- 20251112 P/O determines by Sahassawat IM.2567 --E*
+              END-IF
+           ELSE
+              IF BXX001NE-DI044 = "1" THEN
+                 EVALUATE BXX004GR-CL001
+                    WHEN  "1A"
+                          MOVE  "LABEL-1A-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "3A"
+                          MOVE  "LABEL-3A-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "4A"
+                          MOVE  "LABEL-4A-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "1B"
+                          MOVE  "LABEL-1B-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "3B"
+                          MOVE  "LABEL-3B-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "4B"
+                          MOVE  "LABEL-4B-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "1C"
+                          MOVE  "LABEL-1C-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "3C"
+                          MOVE  "LABEL-3C-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "4C"
+                          MOVE  "LABEL-4C-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "1D"
+                          MOVE  "LABEL-1D-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "3D"
+                          MOVE  "LABEL-3D-TIS" TO  PBPOUTFORM-NAME
+                    WHEN  "4D"
+                          MOVE  "LABEL-4D-TIS" TO  PBPOUTFORM-NAME
+                    WHEN OTHER
+                          MOVE  "LABEL-PT-TIS" TO  PBPOUTFORM-NAME
+                 END-EVALUATE
+      *--        -show TIS-NAME only TIS case by Onuma T. 20100909 START
+                 MOVE  "1" TO WK-CHK-TIS-NAME
+      *--        -show TIS-NAME only TIS case by Onuma T. 20100909 END.
+              ELSE
+      *--- 28/APR/2002 TIS by Witoon ------------ END -----------------*
+      *--- 20251112 P/O determines by Sahassawat IM.2567 --S*
+                 EVALUATE BXX004GR-CL001
+                    WHEN  "1A"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-1A-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-1A" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "3A"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-3A-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-3A" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "4A"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-4A-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-4A" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "1B"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-1B-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-1B" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "3B"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-3B-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-3B" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "4B"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-4B-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-4B" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "1C"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-1C-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-1C" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "3C"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-3C-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-3C" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "4C"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-4C-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-4C" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "1D"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-1D-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-1D" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "3D"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-3D-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-3D" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN  "4D"
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-4D-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-4D" TO  PBPOUTFORM-NAME
+                          END-IF
+                    WHEN OTHER
+                          IF WK-IS-COIL-PO = '1' THEN
+                             MOVE  "LABEL-PT-TIS" TO  PBPOUTFORM-NAME
+                          ELSE
+                             MOVE  "LABEL-PT" TO  PBPOUTFORM-NAME
+                          END-IF
+                 END-EVALUATE
+
+                 IF WK-IS-COIL-PO = '1' THEN
+                    MOVE  "1" TO WK-CHK-TIS-NAME
+                 END-IF
+      *--- 20251112 P/O determines by Sahassawat IM.2567 --E*
+              END-IF
+           END-IF.
+      *--- 28/APR/2002 TIS by Witoon ------------ END -----------------*
+
+
+      *----<< Change by Chumpol  15/Sep/2000 >>------------*
+      *      MOVE  43                    TO  PBPOUTDATA-CNT
+      *
+      ** 24/Jan/2002 by dang***
+      *      MOVE  44                    TO  PBPOUTDATA-CNT
+      *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
+      *      MOVE  45                    TO  PBPOUTDATA-CNT
+      *       MOVE  48                    TO  PBPOUTDATA-CNT
+      *--- 28/APR/2002 TIS by Witoon ------------ END -----------------*
+      *--- 20100728 TIS-NAME by Onuma T.-- START ----------------------*
+      *    MOVE  49                    TO  PBPOUTDATA-CNT
+      *--- 20100728 TIS-NAME by Onuma T.-- END.  ----------------------*
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+      *     MOVE  54                  TO  PBPOUTDATA-CNT
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *-- 20201126 TIS-QR by Onuma T. STA.
+      *--- 20251112 Update new item by Sahassawat IM.2567 --S*
+      *    MOVE  55                  TO  PBPOUTDATA-CNT
+           MOVE  56                  TO  PBPOUTDATA-CNT
+      *--- 20251112 Update new item by Sahassawat IM.2567 --E*
+      *-- 20201126 TIS-QR by Onuma T. END.
+
+      * inspection no.  *
+           UNSTRING  MDC001PA-NO001(MDC00)
+               INTO  WWXBCP-PA-1  WWXBCP-PA-2  WWXBCP-PA-3  WWXBCP-PA-4
+                     WWXBCP-PA-5
+           END-UNSTRING
+
+      * product name  *
+           MOVE    BXX008LA-PR001        TO  WWXBCP-LA-PR001
+      *--- 20251112 determines name display by Sahassawat IM.2567 --S*
+
+           INITIALIZE WK-SEARCH-COUNT
+           INSPECT BXX008LA-PR001 TALLYING WK-SEARCH-COUNT
+                   FOR ALL "Hot-Rolled"
+
+           IF WK-SEARCH-COUNT > ZERO
+      * Hot-Rolled products ? Use H1,NAME2 with c36
+              MOVE "Hot-Rolled Steel Wide Strip" TO WWXBCP-PRODUCT-TIS
+              DISPLAY "TIS-NAME : Hot-Rolled Steel Wide Strip "
+           ELSE
+      * Other products ? Use H87,NAME68 with c37
+              MOVE "Cold Rolled Wide Strip"      TO WWXBCP-PRODUCT-TIS
+              DISPLAY "TIS-NAME : Cold Rolled Wide Strip "
+           END-IF
+      *--- 20251112 determines name display by Sahassawat IM.2567 --E*
+      * specification *
+           MOVE    BXX008LA-PR004        TO  WWXBCP-LA-PR004
+
+      * contract no.  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE               TO  WWXBCP-CO-NO001
+               MOVE  SPACE               TO  WWXBCP-CO-NO-TIL
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF (BXX001NE-DI021 = "1")  THEN
+      *           MOVE  BXX008DE-LO001      TO  WWXBCP-CO-NO001
+      * Trouble maintenance by Chumpol on 18/AUG/2000
+                IF NOT (BXX008DE-LO001 = SPACE)  THEN
+                  UNSTRING  BXX008DE-LO001
+                      INTO  WWXBCP-CO-NO-1  WWXBCP-CO-NO-2
+                  END-UNSTRING
+                  MOVE  "CONTRACT No."      TO  WWXBCP-CO-NO-TIL
+      * Trouble maintenance by Chumpol on 18/AUG/2000
+                ELSE
+                  MOVE  SPACE               TO  WWXBCP-CO-NO001
+                  MOVE  SPACE               TO  WWXBCP-CO-NO-TIL
+                END-IF
+              ELSE
+                  MOVE  SPACE               TO  WWXBCP-CO-NO001
+                  MOVE  SPACE               TO  WWXBCP-CO-NO-TIL
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+      * case no.      *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+
+      * ---6/Sep/2004 by Salakchit(Scondary Export show case no.)-- - *
+              IF (BXX004US-CO003 = "XCH1") THEN
+                  MOVE  BXX008CA-NO002      TO  WWXBCP-CA-NO002
+                  MOVE  "CASE No."          TO  WWXBCP-CASE-TIL
+              ELSE
+      * ---6/Sep/2004 by Salakchit (show case no.)          End   --- *
+
+                  MOVE  SPACE               TO  WWXBCP-CA-NO002
+                  MOVE  SPACE               TO  WWXBCP-CASE-TIL
+              END-IF
+
+           ELSE
+              IF (BXX008EX-CL001  = "1")    AND
+                 (BXX008CA-NO002  <> SPACE) THEN
+                  MOVE  BXX008CA-NO002      TO  WWXBCP-CA-NO002
+                  MOVE  "CASE No."          TO  WWXBCP-CASE-TIL
+              ELSE
+                  MOVE  SPACE               TO  WWXBCP-CA-NO002
+                  MOVE  SPACE               TO  WWXBCP-CASE-TIL
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+      * size          *
+           MOVE    BXX008LA-PR003        TO  WWXBCP-LA-PR003
+
+      * net mass      *
+      *    IF (BXX004OR-TH004 = 'L')  THEN
+      * Change condition from or_th004 --> co_pa004  *
+           IF (BXX004CO-PA004 = 'B')  THEN
+               INITIALIZE  PCOM66WWWCOM66
+               INITIALIZE  EED011-MSGBODY
+
+               MOVE  BXX008PR-WE002          TO  PCOM66PR-WE002
+               DISPLAY  " NET-MASS PCOM66PR-WE002  ="   PCOM66PR-WE002
+               EXEC  SQL  EXECUTE
+                  BEGIN
+                  dbg_log.f_open('CS','EDC10200-1',500);
+                  dbg_log.f_put('WWWCOM66-START-1');
+                  dbg_log.f_put(':PCOM66PR-WE002='||:PCOM66PR-WE002);
+                  dbg_log.f_put(':PCOM66GR-WE002='||:PCOM66GR-WE002);
+                  dbg_log.f_put(':PCOM66RE-CO002='||:PCOM66RE-CO002);
+
+                     WWWCOM66(:PCOM66PR-WE002,
+                              :PCOM66GR-WE002,
+                              :PCOM66RE-CO002);
+                  dbg_log.f_put(':PCOM66RE-CO002='||:PCOM66RE-CO002);
+                  dbg_log.f_close;
+
+                  END;
+               END-EXEC
+
+               IF  NOT(PCOM66RE-CO002  =  ZERO)
+                   DISPLAY  "PCOM66RE-CO002  =" PCOM66RE-CO002
+                   MOVE  "WX000005"          TO  PSSENDMSGID
+                   MOVE  "WWWCOM66"          TO  WX0005-MSGBODY-1
+                   MOVE  PCOM66RE-CO002      TO  WX0005-MSGBODY-2
+                   PERFORM  V0-MSG-DIVIDE
+                   MOVE  "ERR"             TO  SWABEND
+      *            PERFORM  Y0-ABEND-PROCESS
+               END-IF
+
+               DISPLAY  " NET-MASS PCOM66GR-WE002  ="   PCOM66GR-WE002
+               DISPLAY  " NET-MASS PCOM66RE-CO002  ="   PCOM66RE-CO002
+               MOVE  PCOM66GR-WE002          TO  WW000NT-WE000
+
+               COMPUTE  WWXBCP-NT-LBS-1 = WW000NT-WE000 / 1000
+               MOVE     WW000NT-WE000   TO  WWXBCP-NT-LBS-3
+
+               MOVE    ","     TO     WWXBCP-NT-LBS-2
+               MOVE    " LBS"  TO     WWXBCP-NT-LBS-4
+
+               MOVE    SPACE   TO     WWXBCP-NT-KG
+
+           ELSE
+      *         MOVE  BXX008PR-WE002          TO  WW000NT-WE000
+               MOVE    SPACE   TO    WWXBCP-NT-LBS
+           END-IF.
+           COMPUTE   WW000NT-WE000   =    BXX008PR-WE002  * 1000
+           COMPUTE   WWXBCP-NT-KG-1  =    WW000NT-WE000 / 1000
+           MOVE      WW000NT-WE000   TO   WWXBCP-NT-KG-3
+           MOVE      ","             TO   WWXBCP-NT-KG-2
+           MOVE      " KG "          TO   WWXBCP-NT-KG-4
+
+
+      * gross mass     *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE           TO  WWXBCP-GS-LBS
+               MOVE  SPACE           TO  WWXBCP-GS-KG
+               MOVE  SPACE           TO  WWXBCP-GS-TIL
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+             IF   BXX001NE-DI013 = "1"  THEN
+               MOVE    "GROSS MASS."  TO  WWXBCP-GS-TIL
+      *         IF (BXX004OR-TH004 = 'L')  THEN
+      * Change condition from or_th004 --> co_pa004  *
+               IF (BXX004CO-PA004 = 'B')  THEN
+                 INITIALIZE  PCOM66WWWCOM66
+                 INITIALIZE  EED011-MSGBODY
+
+                 MOVE  BXX008GR-WE001          TO  PCOM66PR-WE002
+                 DISPLAY " GROSS-MASS PCOM66PR-WE002  =" PCOM66PR-WE002
+                 EXEC  SQL  EXECUTE
+                    BEGIN
+                    dbg_log.f_open('CS','EDC10200-2',500);
+                    dbg_log.f_put('WWWCOM66-START-2');
+                       WWWCOM66(:PCOM66PR-WE002,
+                            :PCOM66GR-WE002,
+                            :PCOM66RE-CO002);
+                       dbg_log.f_close;
+                    END;
+                 END-EXEC
+                 DISPLAY " GROSS-MASS PCOM66GR-WE002  =" PCOM66GR-WE002
+                 DISPLAY " GROSS-MASS PCOM66RE-CO002  =" PCOM66RE-CO002
+                 MOVE  PCOM66GR-WE002          TO  WW000GR-WE000
+
+                 IF  NOT(PCOM66RE-CO002  =  ZERO)
+                     MOVE  "WX000005"          TO  PSSENDMSGID
+                     MOVE  "WWWCOM66"          TO  WX0005-MSGBODY-1
+                     MOVE  PCOM66RE-CO002      TO  WX0005-MSGBODY-2
+                     PERFORM  V0-MSG-DIVIDE
+                     MOVE  "ERR"             TO  SWABEND
+      *            PERFORM  Y0-ABEND-PROCESS
+                 END-IF
+                 COMPUTE  WWXBCP-GS-LBS-1 = WW000GR-WE000 / 1000
+                 MOVE     WW000GR-WE000   TO  WWXBCP-GS-LBS-3
+
+                 MOVE    ","     TO    WWXBCP-GS-LBS-2
+                 MOVE    " LBS"  TO    WWXBCP-GS-LBS-4
+                 MOVE    SPACE   TO    WWXBCP-GS-KG
+               ELSE
+                  MOVE    SPACE   TO    WWXBCP-GS-LBS
+               END-IF
+               COMPUTE   WW000GR-WE000   =   BXX008GR-WE001  * 1000
+               COMPUTE   WWXBCP-GS-KG-1  =   WW000GR-WE000 / 1000
+               MOVE      WW000GR-WE000   TO  WWXBCP-GS-KG-3
+               MOVE    ","               TO  WWXBCP-GS-KG-2
+               MOVE    " KG "            TO  WWXBCP-GS-KG-4
+             ELSE
+               MOVE      SPACE           TO  WWXBCP-GS-LBS
+               MOVE      SPACE           TO  WWXBCP-GS-KG
+               MOVE      SPACE           TO  WWXBCP-GS-TIL
+             END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+      * coil no.    *
+
+      *--- Memo 1035 by Salakchit N. (3-Jan-2012) START  ---*
+           IF (BXX008PA-CO001 (4:1) = "Z") THEN
+                MOVE BCE010-IN-MA001 TO  WWXBCP-CC-NO001
+           ELSE
+                MOVE BXX019PA-MA001  TO  WWXBCP-CC-NO001
+           END-IF
+      *--- Memo 1035 by Salakchit N. (3-Jan-2012) END    ---*
+
+
+      * product date  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE           TO  WWXBCP-PR-EN001
+               MOVE  SPACE           TO  WWXBCP-PROD-DATE
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF (BXX001NE-DI022  =  "1")   THEN
+                  MOVE  BXX008PR-EN001  TO  WWXBCP-PR-EN001
+                  MOVE  "PRODUCT DATE"  TO  WWXBCP-PROD-DATE
+              ELSE
+                  MOVE  SPACE           TO  WWXBCP-PR-EN001
+                  MOVE  SPACE           TO  WWXBCP-PROD-DATE
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+      * number        *
+           MOVE  "1"                 TO  WWXBCP-NO
+
+      * length
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE           TO  WWXBCP-RE-CO001
+               MOVE  SPACE           TO  WWXBCP-LENGTH
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF (BXX001NE-DI014  =  "1")   AND
+                 (BXX008RE-CO001 <> ZERO)   THEN
+                  MOVE  BXX008RE-CO001  TO  WWXBCP-RE-CO001-1
+                  MOVE  "LENGTH"        TO  WWXBCP-LENGTH
+              ELSE
+      *            MOVE  ZERO            TO  WWXBCP-RE-CO001-1
+                  MOVE  SPACE           TO  WWXBCP-LENGTH
+                  MOVE  SPACE           TO  WWXBCP-RE-CO001
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * charge no.    *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE               TO  WWXBCP-CH-NO001
+               MOVE  SPACE               TO  WWXBCP-CHARGE
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF (BXX001NE-DI015  =  "1")   AND
+                 (BXX006CH-NO001 <> SPACE)  THEN
+                  MOVE  BXX006CH-NO001  TO  WWXBCP-CH-NO001
+                  MOVE  "CHARGE No."    TO  WWXBCP-CHARGE
+              ELSE
+                  MOVE  SPACE           TO  WWXBCP-CH-NO001
+                  MOVE  SPACE           TO  WWXBCP-CHARGE
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * exp. side     *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE           TO  WWXBCP-EX-SI001
+               MOVE  SPACE           TO  WWXBCP-EXP
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF (BXX001NE-DI012  =  "1")   AND
+                 (BXX001EX-SI001 <> SPACE)  THEN
+                  MOVE  BXX001EX-SI001  TO  WWXBCP-EX-SI001
+                  MOVE  "EXP. SIDE"     TO  WWXBCP-EXP
+              ELSE
+                  MOVE  SPACE           TO  WWXBCP-EX-SI001
+                  MOVE  SPACE           TO  WWXBCP-EXP
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * oil           *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE           TO  WWXBCP-OI-CL002
+               MOVE  SPACE           TO  WWXBCP-OIL
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF (BXX001NE-DI019  =  "1")   AND
+                 (BXX008OI-CL002  <> SPACE) THEN
+                  MOVE  BXX008OI-CL002  TO  WWXBCP-OI-CL002
+                  MOVE  "OIL"           TO  WWXBCP-OIL
+              ELSE
+                  MOVE  SPACE           TO  WWXBCP-OI-CL002
+                  MOVE  SPACE           TO  WWXBCP-OIL
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * weld          *
+      *----<< Memo320 Change by Chumpol  18/Dec/2000 >>----*
+      *    IF (BXX001NE-DI017  =  "1")   AND
+      *       (BXX008NU-PR001  <> ZERO)  THEN
+      *        MOVE  BXX008NU-PR001  TO  WWXBCP-NU-PR001
+      *        MOVE  "WELD"          TO  WWXBCP-WELD
+      *    ELSE
+      *        MOVE  ZERO            TO  WWXBCP-NU-PR001
+      *        MOVE  SPACE           TO  WWXBCP-WELD
+      *    END-IF
+
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE           TO  WWXBCP-NU-PR001
+               MOVE  SPACE           TO  WWXBCP-WELD
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF (BXX001NE-DI017  =  "1")  THEN
+                 IF (BXX008NU-PR001  <> ZERO)  THEN
+                    MOVE  BXX008NU-PR001  TO  WWXBCP-NU-PR001
+                    MOVE  "WELD"          TO  WWXBCP-WELD
+                 ELSE
+                    MOVE  "0"             TO  WWXBCP-NU-PR001
+                    MOVE  "WELD"          TO  WWXBCP-WELD
+                 END-IF
+              ELSE
+                  MOVE  SPACE           TO  WWXBCP-NU-PR001
+                  MOVE  SPACE           TO  WWXBCP-WELD
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * ph            *
+      *----<< Memo320 Change by Chumpol  18/Dec/2000 >>----*
+      *    IF (BXX001NE-DI018  =  "1")   AND
+      *       (BXX008RE-NU002  <> ZERO)  THEN
+      *        MOVE  BXX008RE-NU002  TO  WWXBCP-RE-NU002
+      *        MOVE  "PH"            TO  WWXBCP-PINHOLE
+      *    ELSE
+      *        MOVE  ZERO            TO  WWXBCP-RE-NU002
+      *        MOVE  SPACE           TO  WWXBCP-PINHOLE
+      *    END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+               MOVE  SPACE           TO  WWXBCP-RE-NU002
+               MOVE  SPACE           TO  WWXBCP-PINHOLE
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF (BXX001NE-DI018  =  "1")   THEN
+                 IF (BXX008RE-NU002  <> ZERO)  THEN
+                    MOVE  BXX008RE-NU002  TO  WWXBCP-RE-NU002
+                    MOVE  "PH"            TO  WWXBCP-PINHOLE
+                 ELSE
+                    MOVE  "0"             TO  WWXBCP-RE-NU002
+                    MOVE  "PH"            TO  WWXBCP-PINHOLE
+                 END-IF
+              ELSE
+                  MOVE  SPACE             TO  WWXBCP-RE-NU002
+                  MOVE  SPACE             TO  WWXBCP-PINHOLE
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * note          *
+      * Trouble maintenance by Chumpol on 18/AUG/2000
+      *    IF BXX001NE-DI020   = "1" THEN
+      *
+      *    IF (BXX008OR-PR001  =  "2")
+      *     AND
+      *      (BXX008AC-CL001  =  "2" OR "3" OR "4")
+      *       MOVE  SPACE               TO  BXX001LA-PR002
+      *    END-IF
+
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              IF BXX008LA-PR002 = SPACE THEN
+                 MOVE "Secondary"           TO WWXBCP-LA-PR002-1
+                 MOVE SPACE                 TO WWXBCP-LA-PR002-2
+              ELSE
+                 IF BXX008PR-IN002 = "5" OR "6" THEN
+                    MOVE BXX008LA-PR002(1:40)  TO WWXBCP-LA-PR002-1
+                    MOVE BXX008LA-PR002(41:40) TO WWXBCP-LA-PR002-2
+                 ELSE
+                    MOVE "Secondary"           TO WWXBCP-LA-PR002-1
+                    MOVE SPACE                 TO WWXBCP-LA-PR002-2
+                 END-IF
+              END-IF
+           ELSE
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- End ----- *
+              IF (BXX008GR-RE001  =  "2" OR "3" OR "4")
+                 MOVE  "Secondary"         TO  WWXBCP-LA-PR002-1
+                 MOVE  SPACE               TO  WWXBCP-LA-PR002-2
+              ELSE
+      * Trouble maintenance by Chumpol on 18/AUG/2000
+                 IF BXX001NE-DI020   = "1" THEN
+                    MOVE  SPACE              TO  WWXBCP-LA-PR002-1
+                                                 WWXBCP-LA-PR002-2
+      * Trouble maintenance by Chumpol on 18/AUG/2000
+      *              IF  NOT (BXX001CO-NO002  =  "1") THEN
+                     MOVE  BXX008LA-PR002(1:40)   TO  WWXBCP-LA-PR002-1
+                     MOVE  BXX008LA-PR002(41:40)  TO  WWXBCP-LA-PR002-2
+      *              ELSE
+      *                  IF  BXX001CO-NO002  =  "1"
+      *                      MOVE  BXX008DE-LO001  TO  WWXBCP-LA-PR002-11
+      *                  ELSE
+      *                      MOVE  SPACE           TO  WWXBCP-LA-PR002-11
+      *                  END-IF
+      *                  MOVE  BXX001LA-PR002      TO  WWXBCP-LA-PR002-2
+      *              END-IF
+                 ELSE
+      * Trouble maintenance by Chumpol on 23/AUG/2000
+                     MOVE  SPACE              TO  WWXBCP-LA-PR002
+                 END-IF
+              END-IF
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 03/09/2001 by Witoon (Secondary Export)--------- End ----- *
+
+      *--- 29/APR/2002 TIS by Witoon ----------------------- START ----*
+      *     IF ( BXX008EX-CL001   = "1" ) OR
+      *        ( BXX008AC-CL001   = "2" OR "3" OR "4") OR
+      *        ( ( BXX008EX-CL001       = "2" ) AND
+      *          ( BXX008DE-LO001(6:1)  = "X" ) )  THEN
+      *        MOVE  "MADE IN THAILAND"  TO  WWXBCP-EXP-LABEL
+      *     ELSE
+      *        MOVE  SPACE               TO  WWXBCP-EXP-LABEL
+      *     END-IF
+           MOVE   "MADE IN THAILAND"         TO  WWXBCP-EXP-LABEL
+      *--- 29/APR/2002 TIS by Witoon ----------------------- END ------*
+
+      * barcode graph  *
+           MOVE   BXX008PA-CO001             TO  WWXBCP-BARCODE
+      ** 24/Jan/2002 by dang add new barcode
+           MOVE   BXX008PA-CO001             TO  WWXBCP-BARCODE-P
+      *--- 14/MAY/2009 ADD by Veerayuth MEMO1024 relabel---- START ----*
+           MOVE   BXX008PR-LA004             TO  WWXBCP-BARCODE-P (10:1)
+      *--- 14/MAY/2009 ADD by Veerayuth MEMO1024 relabel---- END ------*
+      * barcode no     *
+           MOVE   WWXBCP-PA-NO001            TO  WWXBCP-BAR-NO
+
+      * shipping mark-1  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              MOVE  SPACE                TO    WWXBCP-SHIP-MARK-1
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF    (BXX008EX-CL001 = "1") THEN
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-1
+                    ELSE
+                         MOVE  BXX004RE-SH001(1:25)
+                               TO   WWXBCP-SHIP-MARK-1
+                    END-IF
+                ELSE
+                    MOVE  SPACE             TO    WWXBCP-SHIP-MARK-1
+                END-IF
+              ELSE
+      *             -- Mod. 15/FEB/2008 by Veerayuth B.
+      *             MOVE  BXX004US-CO003    TO    WWXBCP-SHIP-MARK-1
+      * --24/JUL/2019 NO.1997 BY KNOKNARD START
+      *             MOVE  SPACE             TO    WWXBCP-SHIP-MARK-1
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-1
+                    ELSE
+                         MOVE  BXX004RE-SH001(1:25)
+                               TO   WWXBCP-SHIP-MARK-1
+                    END-IF
+                ELSE
+                    MOVE  SPACE             TO    WWXBCP-SHIP-MARK-1
+                END-IF
+      * --24/JUL/2019 NO.1997 BY KNOKNARD END
+
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+      * shipping mark-2  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              MOVE  SPACE                TO    WWXBCP-SHIP-MARK-2
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF    (BXX008EX-CL001 = "1") THEN
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-2
+                    ELSE
+                         MOVE  BXX004RE-SH001(26:50)
+                               TO   WWXBCP-SHIP-MARK-2
+                    END-IF
+                ELSE
+                    MOVE  SPACE             TO    WWXBCP-SHIP-MARK-2
+                END-IF
+              ELSE
+      *             -- Mod. 15/FEB/2008 by Veerayuth B.
+      *             MOVE  BXX004US-CO004    TO    WWXBCP-SHIP-MARK-2
+      * --24/JUL/2019 NO.1997 BY KNOKNARD START
+      *              MOVE  SPACE             TO    WWXBCP-SHIP-MARK-2
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-2
+                    ELSE
+                         MOVE  BXX004RE-SH001(26:50)
+                               TO   WWXBCP-SHIP-MARK-2
+                    END-IF
+                ELSE
+                    MOVE  SPACE             TO    WWXBCP-SHIP-MARK-2
+                END-IF
+      * --24/JUL/2019 NO.1997 BY KNOKNARD END
+              END-IF
+
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * shipping mark-3  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              MOVE  SPACE                TO    WWXBCP-SHIP-MARK-3
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF    (BXX008EX-CL001 = "1")  THEN
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-3
+                    ELSE
+                         MOVE  BXX004RE-SH001(51:75)
+                               TO   WWXBCP-SHIP-MARK-3
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-3
+                END-IF
+              ELSE
+      * --24/JUL/2019 NO.1997 BY KNOKNARD START
+      *              MOVE  SPACE          TO    WWXBCP-SHIP-MARK-3
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-3
+                    ELSE
+                         MOVE  BXX004RE-SH001(51:75)
+                               TO   WWXBCP-SHIP-MARK-3
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-3
+                END-IF
+      * --24/JUL/2019 NO.1997 BY KNOKNARD END
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * shipping mark-4  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              MOVE  SPACE                TO    WWXBCP-SHIP-MARK-4
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF    (BXX008EX-CL001 = "1") THEN
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-4
+                    ELSE
+                         MOVE  BXX004RE-SH001(76:100)
+                               TO   WWXBCP-SHIP-MARK-4
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-4
+                END-IF
+              ELSE
+      * --24/JUL/2019 NO.1997 BY KNOKNARD START
+      *              MOVE  SPACE          TO    WWXBCP-SHIP-MARK-4
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-4
+                    ELSE
+                         MOVE  BXX004RE-SH001(76:100)
+                               TO   WWXBCP-SHIP-MARK-4
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-4
+                END-IF
+      * --24/JUL/2019 NO.1997 BY KNOKNARD END
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * shipping mark-5  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              MOVE  SPACE                TO    WWXBCP-SHIP-MARK-5
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF    (BXX008EX-CL001 = "1")  THEN
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-5
+                    ELSE
+                         MOVE  BXX004RE-SH001(101:125)
+                               TO   WWXBCP-SHIP-MARK-5
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-5
+                END-IF
+              ELSE
+      * --24/JUL/2019 NO.1997 BY KNOKNARD START
+      *              MOVE  SPACE          TO    WWXBCP-SHIP-MARK-5
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-5
+                    ELSE
+                         MOVE  BXX004RE-SH001(101:125)
+                               TO   WWXBCP-SHIP-MARK-5
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-5
+                END-IF
+      * --24/JUL/2019 NO.1997 BY KNOKNARD END
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * shipping mark-6  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              MOVE  SPACE                TO    WWXBCP-SHIP-MARK-6
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF    (BXX008EX-CL001 = "1") THEN
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-6
+                    ELSE
+                         MOVE  BXX004RE-SH001(126:150)
+                               TO   WWXBCP-SHIP-MARK-6
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-6
+                END-IF
+              ELSE
+      * --24/JUL/2019 NO.1997 BY KNOKNARD START
+      *              MOVE  SPACE          TO    WWXBCP-SHIP-MARK-6
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-6
+                    ELSE
+                         MOVE  BXX004RE-SH001(126:150)
+                               TO   WWXBCP-SHIP-MARK-6
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-6
+                END-IF
+      * --24/JUL/2019 NO.1997 BY KNOKNARD END
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * shipping mark-7  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              MOVE  SPACE                TO    WWXBCP-SHIP-MARK-7
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF    (BXX008EX-CL001 = "1") THEN
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-7
+                    ELSE
+                         MOVE  BXX004RE-SH001(151:175)
+                               TO   WWXBCP-SHIP-MARK-7
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-7
+                END-IF
+              ELSE
+      * --24/JUL/2019 NO.1997 BY KNOKNARD START
+      *              MOVE  SPACE          TO    WWXBCP-SHIP-MARK-7
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-7
+                    ELSE
+                         MOVE  BXX004RE-SH001(151:175)
+                               TO   WWXBCP-SHIP-MARK-7
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-7
+                END-IF
+
+      * --24/JUL/2019 NO.1997 BY KNOKNARD END
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+
+      * shipping mark-8  *
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           IF (BXX008DE-LO001(4:1) = "X") THEN
+              MOVE  SPACE                TO    WWXBCP-SHIP-MARK-8
+           ELSE
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+              IF    (BXX008EX-CL001 = "1") THEN
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-8
+                    ELSE
+                         MOVE  BXX004RE-SH001(176:200)
+                               TO   WWXBCP-SHIP-MARK-8
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-8
+                END-IF
+              ELSE
+      * --24/JUL/2019 NO.1997 BY KNOKNARD START
+      *              MOVE  SPACE          TO    WWXBCP-SHIP-MARK-8
+                IF (BXX004EX-CL002 = "1") THEN
+                    IF   BXX004PR-CL003 = "1"
+                         MOVE  "+++++++++++++++++++++++++" TO
+                               WWXBCP-SHIP-MARK-8
+                    ELSE
+                         MOVE  BXX004RE-SH001(176:200)
+                               TO   WWXBCP-SHIP-MARK-8
+                    END-IF
+                ELSE
+                    MOVE  SPACE          TO    WWXBCP-SHIP-MARK-8
+                END-IF
+      * --24/JUL/2019 NO.1997 BY KNOKNARD END
+              END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- Start --- *
+           END-IF
+      * --- 31/7/2001 by Witoon (Secondary Export)--------- End   --- *
+
+
+      *--- 28/APR/2002 TIS by Witoon ------------------- START --------*
+      * TIS specification *
+           IF (BXX008GR-RE001 = "2" OR "3" OR "4") THEN
+              IF BXX008PR-CL001(1:1) = "B" THEN
+      *       *- For TMBP Secondary Coil -*
+                 MOVE  SPACE                 TO  WWXBCP-LA-PR019
+              ELSE
+      * --- 11/12/2002 Memo No.505 by chunee--------- Start --- *
+                 IF BXX001HC-SP001(1:1) = "B" THEN
+                    MOVE  "TIS 2012 CR 1-8"  TO  WWXBCP-LA-PR019
+                 ELSE
+      * --- 11/12/2002 Memo No.505 by chunee--------- End   --- *
+      *       *- For CRS & GIS Secondary Coil -*
+                    EVALUATE BXX008LA-PR004(1:4)
+                       WHEN "SPCC"
+                          MOVE  "CR 1"       TO  WW0000-TIS-SPEC-1
+                       WHEN "SPCD"
+                          MOVE  "CR 2"       TO  WW0000-TIS-SPEC-1
+                    END-EVALUATE
+                    EVALUATE BXX008LA-PR004(6:1)
+                       WHEN "M"
+                          MOVE  "1"          TO  WW0000-TIS-SPEC-2
+                       WHEN "S"
+                          MOVE  "S"          TO  WW0000-TIS-SPEC-2
+                       WHEN "1"
+                          MOVE  "1"          TO  WW0000-TIS-SPEC-2
+                       WHEN "2"
+                          MOVE  "2"          TO  WW0000-TIS-SPEC-2
+                       WHEN "4"
+                          MOVE  "4"          TO  WW0000-TIS-SPEC-2
+                       WHEN "8"
+                          MOVE  "8"          TO  WW0000-TIS-SPEC-2
+                    END-EVALUATE
+
+                    MOVE  WW0000-TIS-SPEC    TO  WWXBCP-LA-PR019
+
+                    DISPLAY  "BEFORE IM.1960 JUDGE"
+                    DISPLAY  "WWXBCP-LA-PR019 = " WWXBCP-LA-PR019
+
+                    DISPLAY  "AFTER  IM.1960 JUDGE"
+                    DISPLAY  "BXX001HC-SP001  = " BXX001HC-SP001
+                    DISPLAY  "WW0000-REJ      = " WW0000-REJ
+
+      * --- 20/12/2018 Memo No.1960 by Natchaya P.--------- Start --- *
+                    IF (BXX001HC-SP001(1:3) = "RSD" AND
+                        ((BXX001HC-SP001(6:3) = "U35") OR
+                         (BXX001HC-SP001(7:2) = "35" OR "40" OR "45")))
+                       OR
+                       (BXX001HC-SP001(1:3) = "RAP" AND
+                        (BXX001HC-SP001(7:2) = "40" OR "45"))
+                       OR
+                       (BXX001HC-SP001(1:3) = "RAU" OR "RAW")
+                       OR
+                       (BXX001HC-SP001(1:3) = "FBW" AND
+                        (BXX001HC-SP001(7:2) = "08" OR "10" OR "12"))
+                    THEN
+      *       *- Reject Code = '750' or 'W73' -*
+                       IF (WW0000-REJ = "W73" OR "750") THEN
+                         MOVE  "CR 1"            TO  WW0000-TIS-SPEC-1
+                         EVALUATE BXX001HC-SP001(1:3)
+                           WHEN "RSD"
+                             EVALUATE BXX001HC-SP001(7:2)
+                               WHEN "35"
+                                  MOVE  "S"      TO  WW0000-TIS-SPEC-2
+                               WHEN "40"
+                               WHEN "45"
+                                  MOVE  "8"      TO  WW0000-TIS-SPEC-2
+                             END-EVALUATE
+                           WHEN "RAP"
+                             EVALUATE BXX001HC-SP001(7:2)
+                               WHEN "40"
+                               WHEN "45"
+                                  MOVE  "8"      TO  WW0000-TIS-SPEC-2
+                             END-EVALUATE
+                           WHEN "RAU"
+                           WHEN "RAW"
+                              MOVE  "1"          TO  WW0000-TIS-SPEC-2
+                           WHEN "FBW"
+                             EVALUATE BXX001HC-SP001(7:2)
+                               WHEN "08"
+                               WHEN "10"
+                               WHEN "12"
+                                  MOVE  "1"      TO  WW0000-TIS-SPEC-2
+                             END-EVALUATE
+                         END-EVALUATE
+                         MOVE  WW0000-TIS-SPEC   TO  WWXBCP-LA-PR019
+      *       *- Other Reject Codes -*
+                       ELSE
+                         MOVE  "0"              TO  WW0000-TIS-SPEC-CHK
+                         EVALUATE BXX001HC-SP001(1:3)
+                           WHEN "RSD"
+                             IF BXX001HC-SP001(6:3) = "U35" THEN
+                                MOVE "CRA340BH-"   TO WW0000-TIS-SPEC-A
+                                MOVE "1"         TO WW0000-TIS-SPEC-CHK
+                             ELSE
+                               EVALUATE BXX001HC-SP001(7:2)
+                                 WHEN "35"
+                                   MOVE "CRA340-"  TO WW0000-TIS-SPEC-A
+                                   MOVE "1"      TO WW0000-TIS-SPEC-CHK
+                                 WHEN "40"
+                                   MOVE "CRA390D-" TO WW0000-TIS-SPEC-A
+                                   MOVE "1"      TO WW0000-TIS-SPEC-CHK
+                                 WHEN "45"
+                                   MOVE "CRA440D-" TO WW0000-TIS-SPEC-A
+                                   MOVE "1"      TO WW0000-TIS-SPEC-CHK
+                               END-EVALUATE
+                             END-IF
+                           WHEN "RAP"
+                             EVALUATE BXX001HC-SP001(7:2)
+                               WHEN "40"
+                                 MOVE "CRA390-"    TO WW0000-TIS-SPEC-A
+                                 MOVE "1"        TO WW0000-TIS-SPEC-CHK
+                               WHEN "45"
+                                 MOVE "CRA440-"    TO WW0000-TIS-SPEC-A
+                                 MOVE "1"        TO WW0000-TIS-SPEC-CHK
+                             END-EVALUATE
+                           WHEN "RAU"
+                             MOVE "CRA590H-"       TO WW0000-TIS-SPEC-A
+                             MOVE "1"            TO WW0000-TIS-SPEC-CHK
+                           WHEN "RAW"
+                             MOVE "CRA590L-"       TO WW0000-TIS-SPEC-A
+                             MOVE "1"            TO WW0000-TIS-SPEC-CHK
+                           WHEN "FBW"
+                             EVALUATE BXX001HC-SP001(7:2)
+                               WHEN "08"
+                                 MOVE "CRA780L-"   TO WW0000-TIS-SPEC-A
+                                 MOVE "1"        TO WW0000-TIS-SPEC-CHK
+                               WHEN "10"
+                                 MOVE "CRA980L-"   TO WW0000-TIS-SPEC-A
+                                 MOVE "1"        TO WW0000-TIS-SPEC-CHK
+                               WHEN "12"
+                                 MOVE "CRA1180L-"  TO WW0000-TIS-SPEC-A
+                                 MOVE "1"        TO WW0000-TIS-SPEC-CHK
+                             END-EVALUATE
+                         END-EVALUATE
+                         IF WW0000-TIS-SPEC-CHK = "1" THEN
+                            STRING "TIS 2140 "       DELIMITED BY SIZE
+                                   WW0000-TIS-SPEC-A DELIMITED BY SPACE
+                                   WW0000-TIS-SPEC-2 DELIMITED BY SIZE
+                              INTO WWXBCP-LA-PR019
+                            END-STRING
+                         END-IF
+                       END-IF
+                    END-IF
+      * --- 20/12/2018 Memo No.1960 by Natchaya P.--------- End --- *
+
+      * --- 11/12/2002 Memo No.505 by chunee--------- Start --- *
+                 END-IF
+      * --- 11/12/2002 Memo No.505 by chunee--------- End   --- *
+              END-IF
+           ELSE
+      *       *- For Primary Coil -*
+              MOVE    BXX001LA-PR019        TO  WWXBCP-LA-PR019
+           END-IF
+      *--- 20100728 TIS-NAME by Onuma T.-- START ----------------------*
+           DISPLAY "WWXBCP-LA-PR019 = " WWXBCP-LA-PR019
+           IF  WWXBCP-LA-PR019  = SPACE THEN
+               MOVE  SPACE  TO WWXBCP-TIS-NAME
+      *--- 20201126 TIS-QR by Onuma T. --STA
+               MOVE  SPACE  TO WWXBCP-TIS-QR
+      *--- 20201126 TIS-QR by Onuma T. --END
+           ELSE
+              IF  (WWXBCP-LA-PR019(1:8) = "TIS 2012")
+                  AND (WK-CHK-TIS-NAME = "1") THEN
+      **            MOVE "TIS 2012-2543" TO WWXBCP-TIS-NAME
+      *--- 20171204 Memo.1859 STA
+                    MOVE "TIS 2012-2558" TO WWXBCP-TIS-NAME
+      *--- 20171204 Memo.1859 END.
+      *--- 20201126 TIS-QR by Onuma T. --STA
+                    MOVE "https://appdb.tisi.go.th/Q/i.php?d=4206998462"
+                    TO WWXBCP-TIS-QR
+                    DISPLAY  WWXBCP-TIS-QR
+      *--- 20201126 TIS-QR by Onuma T. --END
+              ELSE
+                 IF (WWXBCP-LA-PR019(1:8) = "TIS 2140")
+                    AND (WK-CHK-TIS-NAME = "1") THEN
+      *-- 20210425 M.2168 change 2546 to 2560 start
+      *             MOVE "TIS 2140-2546" TO WWXBCP-TIS-NAME
+                    MOVE "TIS 2140-2560" TO WWXBCP-TIS-NAME
+      *--- 20201126 TIS-QR by Onuma T. --STA
+      *             MOVE "https://appdb.tisi.go.th/Q/i.php?d=2863992432"
+                    MOVE "https://appdb.tisi.go.th/Q/i.php?d=3717857861"
+      *-- 20210425 M.2168 change 2546 to 2560 end
+                    TO WWXBCP-TIS-QR
+                    DISPLAY  WWXBCP-TIS-QR
+      *--- 20201126 TIS-QR by Onuma T. --END
+                 ELSE
+      *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--Start
+                   IF (WWXBCP-LA-PR019(1:8) = "TIS 528")
+                     AND (WK-CHK-TIS-NAME = "1") THEN
+                     MOVE "TIS 528-2560" TO WWXBCP-TIS-NAME
+                     MOVE "https://appdb.tisi.go.th/Q/i.php?d=193323436"
+                     TO WWXBCP-TIS-QR
+                     DISPLAY  WWXBCP-TIS-QR
+                   ELSE
+                    MOVE  SPACE  TO WWXBCP-TIS-NAME
+      *--- 20201126 TIS-QR by Onuma T. --STA
+                    MOVE  SPACE  TO WWXBCP-TIS-QR
+                    DISPLAY  WWXBCP-TIS-QR
+      *--- 20201126 TIS-QR by Onuma T. --END
+                   END-IF
+      *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--END.
+                 END-IF
+              END-IF
+           END-IF
+      *--- 20100728 TIS-NAME by Onuma T.-- END.  ----------------------*
+
+      * edge condition *
+           IF (BXX008GR-RE001 = "2" OR "3" OR "4") THEN
+              IF (BXX008PR-CL001(1:1) = "B") THEN
+                  MOVE  SPACE           TO  WWXBCP-FI-PR003
+                  MOVE  SPACE           TO  WWXBCP-EDGE
+              ELSE
+                  MOVE  BXX001FI-PR003  TO  WWXBCP-FI-PR003
+                  MOVE  "EDGE"          TO  WWXBCP-EDGE
+              END-IF
+           ELSE
+              IF (BXX001NE-DI043  =  "1")   AND
+                 (BXX001FI-PR003 <> SPACE)  THEN
+                  MOVE  BXX001FI-PR003  TO  WWXBCP-FI-PR003
+                  MOVE  "EDGE"          TO  WWXBCP-EDGE
+              ELSE
+                  MOVE  SPACE           TO  WWXBCP-FI-PR003
+                  MOVE  SPACE           TO  WWXBCP-EDGE
+              END-IF
+           END-IF
+      *--- 28/APR/2002 TIS by Witoon ------------------- END ----------*
+
+
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+      * Reject cause code show
+      *    IF  WW0000-REJ = "R81"
+      *      AND (BXX004US-CO003 = "AN40"
+      *        OR BXX004US-CO004 = "AN40")THEN
+
+      *        MOVE WW0000-REJ            TO  WWXBCP-REJ
+      *        DISPLAY "WWXBCP-REJ="WWXBCP-REJ
+      *    END-IF
+      * PC NO and Size small
+
+      * comment salakchit 14-Oct-13 Start
+      *      IF (BXX008PA-ST004  = "GP24M" OR "GP27M"
+      *      OR "GP00A" OR "RP000" ) THEN
+      * comment salakchit 14-Oct-13 Start
+              MOVE BXX008PA-CO001        TO  WWXBCP-PA-SMALL
+              MOVE WW0000-SIZE           TO  WWXBCP-SIZE
+      * comment salakchit 14-Oct-13 Start
+      *    END-IF
+              DISPLAY "WWXBCP-PA-SMALL="WWXBCP-PA-SMALL
+              DISPLAY "WW0000-SIZE="WW0000-SIZE
+      *-- 07/Jul/2013 Salakchit Memo. 1378 END  -----------------------*
+
+
+      *    MOVE  1                    TO  PBPOUTPRINT-NUM
+      *    MOVE  BXX008NU-LA001       TO  PBPOUTPRINT-NUM
+
+      ******-- 17/Apr/1999 (MISS SHIPMENT)    START           >> --- *
+      ******-- UNIT No = '01' -> OP-1,UNIT No = '02' -> OP-3  >> --- *
+      ******-- 22/Feb/2005 Add '09' for output 1 label        >> --- *
+      ******-- UNIT No = '09' -> For output 1 label (test or check) >>*
+           IF  MDC001UN-NO001 = '09' THEN
+             IF  BXX001NU-IS001 > ZERO THEN
+                 COMPUTE  WW008NU-LA001  =  BXX008NU-LA001  + 1
+                 MOVE  1  TO  WW0000-LOOP-COUNT
+                 DISPLAY "*** OUTPUT 1 LABEL ***"
+             ELSE
+                 MOVE  "IEDC1011"              TO  PSSENDMSGID
+                 MOVE   MDC001PA-NO001(MDC00)  TO  IED101-PA-CO001
+                 PERFORM  V0-MSG-DIVIDE
+                 GO TO C11-900
+             END-IF
+           ELSE
+      ******-- 24/JUN/2005 Remove by Witoon ----------------------******
+      *       IF  MDC001UN-NO001 = '01' THEN
+      *           IF  BXX001NU-IS001 > ZERO THEN
+      *               COMPUTE  WW008NU-LA001  =  BXX008NU-LA001  + 1
+      *               MOVE  2  TO  WW0000-LOOP-COUNT
+      *           ELSE
+      *               MOVE  "IEDC1011"              TO  PSSENDMSGID
+      *               MOVE   MDC001PA-NO001(MDC00)  TO  IED101-PA-CO001
+      *               PERFORM  V0-MSG-DIVIDE
+      *               GO TO C11-900
+      *           END-IF
+      *       ELSE
+      *  Salakchit START 30/NOV/2006 REMOVE CONDITION
+      *           IF  BXX001NU-IS001 > ZERO THEN
+      *            COMPUTE  WW008NU-LA001  =  BXX008NU-LA001   + 1
+      *           ELSE
+      *               MOVE  BXX008NU-LA001  TO  WW008NU-LA001
+      *           END-IF
+      *            MOVE  WW008NU-LA001       TO  WW0000-LOOP-COUNT
+                   COMPUTE  WW008NU-LA001  =  BXX008NU-LA001   + 1
+                   MOVE  WW008NU-LA001       TO  WW0000-LOOP-COUNT
+      *  Salakchit END  30/NOV/2006 REMOVE CONDITION
+      *       END-IF
+           END-IF
+
+           DISPLAY  " WW0000-LOOP-COUNT  ="   WW0000-LOOP-COUNT
+           DISPLAY  " MDC001UN-NO001     ="   MDC001UN-NO001
+           DISPLAY  " BXX001NU-IS001     ="   BXX001NU-IS001
+           DISPLAY  " WW008NU-LA001      ="   WW008NU-LA001
+
+      *     MOVE  BXX008NU-LA001       TO  WW008NU-LA001
+      ******-- 17/Apr/1999 (MISS SHIPMENT)     END            >> --- *
+
+           MULTIPLY  1000  BY  BXX008PR-WE002  GIVING  WWXBCP-PR-2
+           DIVIDE  BXX008PR-WE002  BY  1  GIVING  WWXBCP-PR-1
+
+
+      *------------------------------- 04/OCT/2000 by Chumpol  FROM -*
+
+           MOVE  1                    TO  PBPOUTPRINT-NUM
+      *    MOVE  BXX008NU-LA001       TO  PBPOUTPRINT-NUM
+           MOVE  SPACE                TO  WW0000-CK-DATA01
+
+           IF  PCOM96BA-PR004  <>  "NONE"  THEN
+               DISPLAY "Product Label Checking at ="PCOM96BA-PR004
+               MOVE  PCOM96BA-PR004        TO  PBPOUTPRINTER-ID
+               MOVE  "1"                   TO  WW0000-CK-DATA01
+               PERFORM  C12-PROCESS
+           END-IF
+
+      *-- re-print product label from EDS02,EDS10 still need plus 1
+           IF WW0000-AP-PR001 <> "EDS02   "
+           AND WW0000-AP-PR001 <> "EDS10   "
+              MOVE  BXX008NU-LA001      TO  WW008NU-LA001
+              DISPLAY "WW0000-AP-PR001="WW008NU-LA001
+           END-IF
+
+           MOVE  WW008NU-LA001          TO  WW0000-LOOP-COUNT
+
+           DISPLAY "WW0000-LOOP-COUNT="WW0000-LOOP-COUNT
+
+      *--- 22/JUN/2004 BY Salakchit MEMO. 619 --------------START -----*
+           IF (BXX008PA-ST004  = "GP24M" OR "GP27M" OR "GP00A") THEN
+              MOVE WW0000-LOOP-COUNT  TO  WW0000-LOOP-BS
+              PERFORM  TEST   BEFORE
+                    VARYING Z0000  FROM  1  BY  1
+                    UNTIL   Z0000  >  WW0000-LOOP-COUNT
+
+                    IF Z0000  =  WW0000-LOOP-BS THEN
+      *                 MOVE WW0000-COILNO     TO WWXBCP-PA-NO001
+                       MOVE PBPOUTFORM-NAME    TO PBPOUTFORM-NAME-BS
+                       MOVE "LABEL-PC-NO"      TO PBPOUTFORM-NAME
+                       PERFORM  C12-PROCESS
+                       MOVE PBPOUTFORM-NAME-BS    TO PBPOUTFORM-NAME
+
+                    ELSE
+                       PERFORM  C12-PROCESS
+                    END-IF
+
+              END-PERFORM
+      *--- 22/JUN/2004 BY Salakchit MEMO. 619 --------------END  -----*
+           ELSE
+              PERFORM  TEST   BEFORE
+                    VARYING Z0000  FROM  1  BY  1
+                    UNTIL   Z0000  >  WW0000-LOOP-COUNT
+                    PERFORM  C12-PROCESS
+
+      *-- 20/APR/2012 Salakchit MEMO.1279 relate with WXBCPOUT START--*
+      * sleep 3 secs
+      *              EXEC SQL EXECUTE
+      *                  BEGIN
+      *                       DBMS_LOCK.SLEEP(3);
+      *                  END;
+      *              END-EXEC
+
+              EXEC  SQL
+              SELECT to_char(SYSDATE,'hh:mm:ss') INTO :DATIME FROM DUAL
+              END-EXEC
+
+              DISPLAY "STAMP TIME = " DATIME
+
+      *-- 20/APR/2012 Salakchit MEMO.1279 relate with WXBCPOUT END  --*
+
+              END-PERFORM
+
+           END-IF
+
+           PERFORM  C13-PROCESS
+
+      *------------------------------- 04/OCT/2000 by Chumpol  TO   -*
+      * Onuma T. 20181008 Automated warehouse prj. QR Label  STA
+           IF     (NOT(BXX008PA-ST004 = "GP00A" OR "RP000"))
+              AND (BXX008RE-NE001  = "0"
+                     OR
+                   (BXX008RE-NE001 = "1" AND BXX008RE-ST003 = "1")
+                   ) THEN
+      *      EXEC SQL
+      *            SELECT TRIM(YA_CO001)
+      *              INTO :WW0000-YA-CO001
+      *              FROM CS_TBLED015
+      *             WHERE PA_CO001 = :WW0000-PA-NO001
+      *         END-EXEC
+      *         EVALUATE  SQLCODE
+      *           WHEN  ZERO
+      *
+      *             IF WW0000-YA-CO001 = "1" OR "2" OR "3" OR "4"
+      *                  OR "5" OR "6" THEN
+                        PERFORM C14-PROCESS
+                        PERFORM C15-PROCESS
+      *               ELSE
+      *                  CONTINUE
+      *
+      *
+      *               END-IF
+      *           WHEN  OTHER
+      *             CONTINUE
+      *       END-EVALUATE
+           END-IF
+      * Onuma T. 20181008 Automated warehouse prj. QR Label  END
+           CONTINUE.
+       C11-900.
+           EXIT.
+
+      /
+       C12-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C12                                                 *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " C12 SEC ".
+
+       C12-100.
+
+      ******-- 17/Apr/1999 (MISS SHIPMENT)    START           >> --- *
+               MOVE  Z0000          TO  WWXBCP-PAGE-1-N
+               MOVE  WW008NU-LA001  TO  WWXBCP-PAGE-3-N
+               DISPLAY "WWXBC-PAGE-1-N-CHECK"  WWXBCP-PAGE-1-N
+               IF  WW0000-CK-DATA01   =   "1"  THEN
+                   MOVE  1                 TO  WWXBCP-PAGE-1-N
+                   MOVE  WW008NU-LA001     TO  WWXBCP-PAGE-3-N
+               END-IF
+      ** 24/Jan/2002 by dang***start
+               IF  WWXBCP-PAGE-1-N = 1 THEN
+                   MOVE "A" TO WWXBCP-BARCODE-P (9:1)
+               END-IF
+               IF  WWXBCP-PAGE-1-N = 2 THEN
+                   MOVE "B" TO WWXBCP-BARCODE-P (9:1)
+               END-IF
+               IF  WWXBCP-PAGE-1-N = 3 THEN
+                   MOVE "C" TO WWXBCP-BARCODE-P (9:1)
+               END-IF
+               IF  WWXBCP-PAGE-1-N = 4 THEN
+                   MOVE "D" TO WWXBCP-BARCODE-P (9:1)
+               END-IF
+      ** 24/Jan/2002 by dang***stop
+
+               IF  Z0000  =  1  THEN
+                   MOVE  WWXBCP-PAGE       TO  BED007LA-NU007
+               END-IF
+
+
+               DISPLAY  " WWXBCP-PAGE ="   WWXBCP-PAGE
+
+      * 23/JUN/03 BY Salakchit  Memo. 619             Start           *
+        IF PBPOUTFORM-NAME = "LABEL-PC-NO" THEN
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+                  MOVE WW0000-COILNO TO WWXBCP-BARCODE-P (1:8)
+                  MOVE "Z" TO WWXBCP-BARCODE-P (9:1)
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End  ---------------------*
+               STRING  WW0000-COILNO     "*"
+                       WW0000-SIZE       "*"
+                       WW0000-COILNO     "*"
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+                       WWXBCP-BARCODE-P  "*"
+                       WW0000-COILNO     "*"
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End  ---------------------*
+                                         DELIMITED  BY  SIZE
+                 INTO  PBPOUTSEND-DATA
+               END-STRING
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+      *         MOVE  2                    TO  PBPOUTDATA-CNT
+                MOVE  5                    TO  PBPOUTDATA-CNT
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End  ---------------------*
+
+             DISPLAY  " WXBCPOUT PBPOUTPRINTER-ID="   PBPOUTPRINTER-ID
+             DISPLAY  "          PBPOUTFORM-NAME ="   PBPOUTFORM-NAME
+             DISPLAY  "          PBPOUTDATA-CNT  ="   PBPOUTDATA-CNT
+             DISPLAY
+           "        =----*----+----*----+----*----+----*----+----*----+"
+
+             DISPLAY  "  DATA 1="         PBPOUTSEND-DATA(1:50)
+             DISPLAY  "       2="         PBPOUTSEND-DATA(51:50)
+             DISPLAY  "           PBPOUTPRINT-NUM="   PBPOUTPRINT-NUM
+
+      * 23/JUN/03 BY Salakchit  Memo. 619
+        ELSE
+
+      * 23/JUN/03 BY Salakchit  Memo. 619
+            DISPLAY "before print WWXBCP-PA-SMALL="WWXBCP-PA-SMALL
+              DISPLAY "before print WW0000-SIZE="WW0000-SIZE
+      *--- 20251112 Change item to display  by Sahassawat IM.2567 --S*
+               STRING  WWXBCP-LA-PR001     "*"
+      *--- 20251112 Change item to display  by Sahassawat IM.2567 --E*
+                       WWXBCP-LA-PR004     "*"
+                       WWXBCP-LA-PR003     "*"
+                       WWXBCP-PA-NO001     "*"
+                       WWXBCP-CASE-TIL     "*"
+                       WWXBCP-CA-NO002     "*"
+                       WWXBCP-NT-LBS       "*"
+                       WWXBCP-NT-KG        "*"
+                       WWXBCP-GS-TIL       "*"
+                       WWXBCP-GS-LBS       "*"
+                       WWXBCP-GS-KG        "*"
+                       WWXBCP-CC-NO001     "*"
+                       WWXBCP-CHARGE       "*"
+                       WWXBCP-CH-NO001     "*"
+                       WWXBCP-PROD-DATE    "*"
+                       WWXBCP-PR-EN001     "*"
+                       WWXBCP-NO           "*"
+                       WWXBCP-LENGTH       "*"
+                       WWXBCP-RE-CO001     "*"
+                       WWXBCP-CO-NO-TIL    "*"
+                       WWXBCP-CO-NO001     "*"
+                       WWXBCP-EXP          "*"
+                       WWXBCP-EX-SI001     "*"
+                       WWXBCP-OIL          "*"
+                       WWXBCP-OI-CL002     "*"
+                       WWXBCP-WELD         "*"
+                       WWXBCP-NU-PR001     "*"
+                       WWXBCP-PINHOLE      "*"
+                       WWXBCP-RE-NU002     "*"
+                       WWXBCP-LA-PR002-1   "*"
+                       WWXBCP-LA-PR002-2   "*"
+                       WWXBCP-BARCODE      "*"
+                       WWXBCP-BAR-NO       "*"
+                       WWXBCP-EXP-LABEL    "*"
+                       WWXBCP-PAGE         "*"
+                       WWXBCP-SHIP-MARK-1  "*"
+                       WWXBCP-SHIP-MARK-2  "*"
+                       WWXBCP-SHIP-MARK-3  "*"
+                       WWXBCP-SHIP-MARK-4  "*"
+                       WWXBCP-SHIP-MARK-5  "*"
+                       WWXBCP-SHIP-MARK-6  "*"
+                       WWXBCP-SHIP-MARK-7  "*"
+                       WWXBCP-SHIP-MARK-8  "*"
+      *----<< Change by Chumpol  15/Sep/2000 >>------------*
+                       WWXBCP-PA-NO001     "*"
+      *** 24/Jan/2002 by dang
+                       WWXBCP-BARCODE-P    "*"
+      *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
+                       WWXBCP-LA-PR019     "*"
+                       WWXBCP-EDGE         "*"
+                       WWXBCP-FI-PR003     "*"
+      *--- 28/APR/2002 TIS by Witoon ------------ END -----------------*
+      *--- 20100728 TIS-NAME by Onuma T.-- START ----------------------*
+                       WWXBCP-TIS-NAME     "*"
+      *--- 20100728 TIS-NAME by Onuma T.-- END.  ----------------------*
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+                       WWXBCP-PA-SMALL     "*"
+                       WWXBCP-PA-SMALL     "*"
+                       WWXBCP-SIZE         "*"
+                       WWXBCP-SIZE         "*"
+                       WWXBCP-REJ          "*"
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *--- 20251118 Change item to display  by Sahassawat IM.2567 --S*
+                       WWXBCP-PRODUCT-TIS  "*"
+      *--- 20251118 Change item to display  by Sahassawat IM.2567 --E*
+      *--- 20201126 TIS-QR by Onuma T. --STA
+                       WWXBCP-TIS-QR       "*"
+      *--- 20201126 TIS-QR by Onuma T. --END
+                                           DELIMITED  BY  SIZE
+                 INTO  PBPOUTSEND-DATA
+               END-STRING
+
+      *DISPLAY for Logging
+             DISPLAY "PBPOUTSEND-DATA = [" PBPOUTSEND-DATA "]"
+
+
+             DISPLAY  " WXBCPOUT PBPOUTPRINTER-ID="   PBPOUTPRINTER-ID
+             DISPLAY  "          PBPOUTFORM-NAME ="   PBPOUTFORM-NAME
+             DISPLAY  "          PBPOUTDATA-CNT  ="   PBPOUTDATA-CNT
+             DISPLAY
+           "        =----*----+----*----+----*----+----*----+----*----+"
+
+             DISPLAY  "  DATA 1="         PBPOUTSEND-DATA(1:50)
+             DISPLAY  "       2="         PBPOUTSEND-DATA(51:50)
+             DISPLAY  "       3="         PBPOUTSEND-DATA(101:50)
+             DISPLAY  "       4="         PBPOUTSEND-DATA(151:50)
+             DISPLAY  "       5="         PBPOUTSEND-DATA(201:50)
+             DISPLAY  "       6="         PBPOUTSEND-DATA(251:50)
+             DISPLAY  "       7="         PBPOUTSEND-DATA(301:50)
+             DISPLAY  "       8="         PBPOUTSEND-DATA(351:50)
+
+      * ** 24/Jan/2002 by dang
+             DISPLAY  "       9="         PBPOUTSEND-DATA(401:50)
+             DISPLAY  "      10="         PBPOUTSEND-DATA(451:50)
+             DISPLAY  "      11="         PBPOUTSEND-DATA(501:50)
+             DISPLAY  "      12="         PBPOUTSEND-DATA(551:50)
+             DISPLAY  "      13="         PBPOUTSEND-DATA(601:50)
+             DISPLAY  "      14="         PBPOUTSEND-DATA(651:50)
+             DISPLAY  "      15="         PBPOUTSEND-DATA(701:50)
+             DISPLAY  "      16="         PBPOUTSEND-DATA(751:50)
+      *  20201210 by Onuma T.
+             DISPLAY  "      17="         PBPOUTSEND-DATA(801:50)
+             DISPLAY  "      18="         PBPOUTSEND-DATA(851:50)
+             DISPLAY  "      19="         PBPOUTSEND-DATA(901:50)
+      *--- 28/APR/2002 TIS by Witoon ---------------- END -------------*
+             DISPLAY  "           PBPOUTPRINT-NUM="   PBPOUTPRINT-NUM
+      *    * -----E-*
+
+      * 23/JUN/03 BY Salakchit  Memo. 619
+        END-IF
+
+      *    // DEVELOPMENT NOT PRINT 20/FEB/2013 //
+           IF    PBPOUTPRINTER-ID  =      "CPUBT999"
+                 DISPLAY  "DEVELOPMENT NOT PRINT OUT"
+                 GO  TO  C12-900
+           END-IF
+
+
+           EXEC  SQL
+               SELECT DB_ST001 INTO :WWDBSTATUS FROM DBSTATUS
+           END-EXEC
+
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               ADD   1                 TO  JED01
+               DISPLAY " SQLCODE = " SQLCODE
+               GO  TO  C12-900
+           END-EVALUATE
+      *    Normal mode
+          IF WWDBSTATUS = "0"
+      *     DISPLAY  " *** CALL WXBCPOUT  ***"
+      *     CALL  "WXBCPOUT"    USING  PBPOUTPRINTER-ID
+             DISPLAY  " *** CALL WXBCPLBL  ***"
+             CALL  "WXBCPLBL"    USING  PBPOUTPRINTER-ID
+                                           PBPOUTFORM-NAME
+                                           BY VALUE PBPOUTDATA-CNT
+                                           BY REFERENCE PBPOUTSEND-DATA
+                                           BY VALUE PBPOUTPRINT-NUM
+                                           RETURNING PBPOUTRTN-CODE
+          ELSE
+               DISPLAY  "   ***  Emergent mode  ***"
+          END-IF
+
+      *    * -TEST-S-*
+             DISPLAY  "   ***  NORMAL END ALL ***"
+             DISPLAY  "   PBPOUTRTN-CODE ="   PBPOUTRTN-CODE
+      *    * -----E-*
+      *    END-PERFORM
+      *   CHANGE INSPECTION COMMAND 1998/05/21 BY YAMADA
+           EVALUATE PBPOUTRTN-CODE
+             WHEN  ZERO
+             WHEN  "1109"
+               CONTINUE
+             WHEN  "1101"
+             WHEN  "1102"
+             WHEN  "1105"
+             WHEN  "1106"
+      *------------------------------- 13/OCT/2000 by Chumpol  FROM -*
+               IF  NOT ( WW0000-CK-DATA01   =   "1" )  THEN
+                   MOVE  "WX000008"    TO     PSSENDMSGID
+                   PERFORM  V0-MSG-DIVIDE
+               ELSE
+                   MOVE  "EX000008"    TO     PSSENDMSGID
+                   PERFORM  V0-MSG-DIVIDE
+               END-IF
+      *------------------------------- 13/OCT/2000 by Chumpol  TO   -*
+             WHEN  OTHER
+               MOVE  "EX000104"    TO     PSSENDMSGID
+               MOVE  "ERR"         TO     SWCHK
+               PERFORM  V0-MSG-DIVIDE
+           END-EVALUATE
+
+
+      *   ADD  ERR_CODE=1109        1998/04/24 BY YAMADA
+      *##  IF  NOT ( PBPOUTRTN-CODE    =      ZERO )
+      *##      IF  PBPOUTRTN-CODE    =  "1101" OR "1102" OR "1105"
+      *##                            OR "1106"
+      *##          MOVE  "WX000008"    TO     PSSENDMSGID
+      *##      ELSE
+      *##          MOVE  "EX000104"    TO     PSSENDMSGID
+      *##          MOVE  "ERR"         TO     SWCHK
+      *##      END-IF
+      *##      PERFORM  V0-MSG-DIVIDE
+      *##  END-IF
+
+           CONTINUE.
+
+       C12-900.
+           EXIT.
+
+      /
+       C13-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C13                                                 *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " C13 SEC ".
+
+       C13-100.
+           MOVE   ZERO  TO  WW0000-OUT-COUNT
+
+      *    * ----- <<      OUTPUT TIME UPDATE                 >> --- *
+           EXEC  SQL
+            SELECT   COUNT(*)
+              INTO   :WW0000-OUT-COUNT
+              FROM   TBLED007
+             WHERE   PA_CO001 = :WW0000-PA-NO001
+           END-EXEC
+
+      *     EVALUATE  SQLCODE
+      *         WHEN  ZERO
+      *             CONTINUE
+      *         WHEN  OTHER
+      *             DISPLAY "PRODUCT LABEL NEVER OUTPUT"
+      *             CONTINUE
+      *     END-EVALUATE
+
+      *     MOVE  WW0000-OUT-COUNT  TO  WW0000-OUT-COUNT-WK
+           ADD                1    TO  WW0000-OUT-COUNT
+           DISPLAY "PRODUCT LABEL OUTPUT TIMES = "WW0000-OUT-COUNT
+
+
+           MOVE  WW0000-PA-NO001   TO  BED007PA-CO001
+           MOVE  WW0000-OUT-COUNT  TO  BED007LA-TI001
+           MOVE  "EDC10200"        TO  BED007AP-PR001
+           MOVE  WW0000-CL-LO001   TO  BED007CL-LO001
+           MOVE  WW0000-BA-PR002   TO  BED007BA-PR002
+           MOVE  WWXBCP-LA-PR001   TO  BED007LA-PR011
+           MOVE  WWXBCP-LA-PR004   TO  BED007LA-PR012
+           MOVE  WWXBCP-LA-PR003   TO  BED007LA-PR013
+           MOVE  WWXBCP-PA-NO001   TO  BED007LA-IN001
+           MOVE  WWXBCP-NT-LBS     TO  BED007LA-NE002
+           MOVE  WWXBCP-NT-KG      TO  BED007LA-NE001
+           MOVE  WWXBCP-GS-TIL     TO  BED007LA-GR003
+           MOVE  WWXBCP-GS-LBS     TO  BED007LA-GR002
+           MOVE  WWXBCP-GS-KG      TO  BED007LA-GR001
+           MOVE  WWXBCP-CC-NO001   TO  BED007LA-CC001
+           MOVE  WWXBCP-CHARGE     TO  BED007LA-CH002
+           MOVE  WWXBCP-CH-NO001   TO  BED007LA-CH001
+           MOVE  WWXBCP-PROD-DATE  TO  BED007LA-PR015
+           MOVE  WWXBCP-PR-EN001   TO  BED007LA-PR014
+           MOVE  WWXBCP-NO         TO  BED007LA-NU001
+           MOVE  WWXBCP-LENGTH     TO  BED007LA-CO002
+           MOVE  WWXBCP-RE-CO001   TO  BED007LA-CO001
+           MOVE  WWXBCP-CO-NO-TIL  TO  BED007LA-CO004
+           MOVE  WWXBCP-CO-NO001   TO  BED007LA-CO003
+           MOVE  WWXBCP-EXP        TO  BED007LA-EX002
+           MOVE  WWXBCP-EX-SI001   TO  BED007LA-EX001
+           MOVE  WWXBCP-OIL        TO  BED007LA-OI002
+           MOVE  WWXBCP-OI-CL002   TO  BED007LA-OI001
+           MOVE  WWXBCP-WELD       TO  BED007LA-NU004
+           MOVE  WWXBCP-NU-PR001   TO  BED007LA-NU003
+           MOVE  WWXBCP-PINHOLE    TO  BED007LA-NU006
+           MOVE  WWXBCP-RE-NU002   TO  BED007LA-NU005
+           MOVE  WWXBCP-CASE-TIL   TO  BED007LA-CA002
+           MOVE  WWXBCP-CA-NO002   TO  BED007LA-CA001
+           MOVE  WWXBCP-LA-PR002-1  TO  BED007LA-PR016
+           MOVE  WWXBCP-LA-PR002-2  TO  BED007LA-PR017
+           MOVE  WWXBCP-BARCODE    TO  BED007LA-IN002
+           MOVE  WWXBCP-BAR-NO     TO  BED007LA-IN003
+           MOVE  WWXBCP-EXP-LABEL  TO  BED007LA-CO005
+      ***  MOVE  WWXBCP-PAGE       TO  BED007LA-NU007    ***
+           MOVE  WWXBCP-SHIP-MARK-1  TO  BED007LA-RE001
+           MOVE  WWXBCP-SHIP-MARK-2  TO  BED007LA-RE002
+           MOVE  WWXBCP-SHIP-MARK-3  TO  BED007LA-RE003
+           MOVE  WWXBCP-SHIP-MARK-4  TO  BED007LA-RE004
+           MOVE  WWXBCP-SHIP-MARK-5  TO  BED007LA-RE005
+           MOVE  WWXBCP-SHIP-MARK-6  TO  BED007LA-RE006
+           MOVE  WWXBCP-SHIP-MARK-7  TO  BED007LA-RE007
+           MOVE  WWXBCP-SHIP-MARK-8  TO  BED007LA-RE008
+           MOVE  PBPOUTFORM-NAME     TO  BED007LA-FO001
+      *--- 01/MAY/2002 TIS by Witoon ------------------------ START ---*
+           MOVE  BXX001NE-DI044      TO  BED007LA-TI002
+           MOVE  WWXBCP-LA-PR019     TO  BED007LA-TI003
+           MOVE  WWXBCP-FI-PR003     TO  BED007LA-TI004
+      *--- 01/MAY/2002 TIS by Witoon ------------------------ END -----*
+      *--- 21/FEB/2005 TIS by Yamada ----------------------------------*
+           MOVE  WWXBCP-EDGE         TO  BED007LA-TI005
+      *--- 15/MAY/2009 Version by Veerayuth----------------------------*
+           MOVE  BXX008PR-LA004      TO  BED007LA-VE001
+
+      *--- 20100728 TIS-NAME by Onuma T. START ------------------------*
+           MOVE  WWXBCP-TIS-NAME  TO  BED007LA-VE002
+      *--- 20100728 TIS-NAME by Onuma T. END. -------------------------*
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+           MOVE  WWXBCP-SIZE      TO  BED007LA-SI001
+           MOVE  WWXBCP-REJ       TO  BED007LA-RE009
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *-- 20201126 TIS-QR by Onuma T. STA.
+           MOVE  WWXBCP-TIS-QR    TO  BED007LA-VE003
+      *-- 20201126 TIS-QR by Onuma T. STA.
+
+
+           DISPLAY "1 = "BED007PA-CO001.
+           DISPLAY "2 = "BED007LA-TI001.
+           DISPLAY "6 = "BED007CL-LO001.
+           DISPLAY "7 = "BED007BA-PR002.
+           DISPLAY "8 = "BED007LA-PR011.
+           DISPLAY "9 = "BED007LA-PR012.
+           DISPLAY "10= "BED007LA-PR013.
+           DISPLAY "11= "BED007LA-IN001.
+           DISPLAY "12= "BED007LA-NE002.
+           DISPLAY "13= "BED007LA-NE001.
+           DISPLAY "14= "BED007LA-GR003.
+           DISPLAY "15= "BED007LA-GR002.
+           DISPLAY "16= "BED007LA-GR001.
+           DISPLAY "17= "BED007LA-CC001.
+           DISPLAY "18= "BED007LA-CH002.
+           DISPLAY "19= "BED007LA-CH001.
+           DISPLAY "20= "BED007LA-PR015.
+           DISPLAY "21= "BED007LA-PR014.
+           DISPLAY "22= "BED007LA-NU001.
+           DISPLAY "23= "BED007LA-CO002.
+           DISPLAY "24= "BED007LA-CO001.
+           DISPLAY "25= "BED007LA-CO004.
+           DISPLAY "26= "BED007LA-CO003.
+           DISPLAY "27= "BED007LA-EX002.
+           DISPLAY "28= "BED007LA-EX001.
+           DISPLAY "29= "BED007LA-OI002.
+           DISPLAY "30= "BED007LA-OI001.
+           DISPLAY "31= "BED007LA-NU004.
+           DISPLAY "32= "BED007LA-NU003.
+           DISPLAY "33= "BED007LA-NU006.
+           DISPLAY "34= "BED007LA-NU005.
+           DISPLAY "35= "BED007LA-CA002.
+           DISPLAY "36= "BED007LA-CA001.
+           DISPLAY "37= "BED007LA-PR016.
+           DISPLAY "38= "BED007LA-PR017.
+           DISPLAY "39= "BED007LA-IN002.
+           DISPLAY "40= "BED007LA-IN003.
+           DISPLAY "41= "BED007LA-CO005.
+           DISPLAY "42= "BED007LA-NU007.
+           DISPLAY "43= "BED007LA-RE001.
+           DISPLAY "44= "BED007LA-RE002.
+           DISPLAY "45= "BED007LA-RE003.
+           DISPLAY "46= "BED007LA-RE004.
+           DISPLAY "47= "BED007LA-RE005.
+           DISPLAY "48= "BED007LA-RE006.
+           DISPLAY "49= "BED007LA-RE007.
+           DISPLAY "50= "BED007LA-RE008.
+           DISPLAY "51= "BED007LA-FO001.
+      *--- 01/MAY/2002 TIS by Witoon ---------------------- START -----*
+           DISPLAY "52= "BED007LA-TI002.
+           DISPLAY "53= "BED007LA-TI003.
+           DISPLAY "54= "BED007LA-TI004.
+      *--- 01/MAY/2002 TIS by Witoon ---------------------- END -------*
+      *--- 21/FEB/2005 TIS by Yamada ----------------------------------*
+           DISPLAY "55= "BED007LA-TI005.
+      *--- 15/MAY/2009 Version by Veerayuth----------------------------*
+           DISPLAY "55= "BED007LA-VE001.
+      *--- 20100728 TIS-NAME by Onuma T.-------------------------------*
+           DISPLAY "WK-CHK-TIS-NAME = "WK-CHK-TIS-NAME.
+           DISPLAY "56= "BED007LA-VE002.
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+           DISPLAY "57= "BED007LA-SI001.
+           DISPLAY "58= "BED007LA-RE009.
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *-- 20201130 TIS-QR by Onuma T . STA.
+           DISPLAY "59= "BED007LA-VE003.
+      *-- 20201130 TIS-QR by Onuma T . End.
+
+
+      *--- Skip insert history for output check
+           IF  MDC001UN-NO001 = '09' THEN
+               GO TO C13-900
+           END-IF.
+
+      *    * ----- <<      TBLED007  INSERT                   >> --- *
+           DISPLAY " INSERT TBLED007 ".
+
+           EXEC  SQL
+              INSERT  INTO  TBLED007
+                     (PA_CO001,
+                      LA_TI001,
+                      RE_IN001,
+                      RE_UP001,
+                      RE_DE001,
+                      AP_PR001,
+                      CL_LO001,
+                      BA_PR002,
+                      LA_PR011,
+                      LA_PR012,
+                      LA_PR013,
+                      LA_IN001,
+                      LA_NE002,
+                      LA_NE001,
+                      LA_GR003,
+                      LA_GR002,
+                      LA_GR001,
+                      LA_CC001,
+                      LA_CH002,
+                      LA_CH001,
+                      LA_PR015,
+                      LA_PR014,
+                      LA_NU001,
+                      LA_CO002,
+                      LA_CO001,
+                      LA_CO004,
+                      LA_CO003,
+                      LA_EX002,
+                      LA_EX001,
+                      LA_OI002,
+                      LA_OI001,
+                      LA_NU004,
+                      LA_NU003,
+                      LA_NU006,
+                      LA_NU005,
+                      LA_CA002,
+                      LA_CA001,
+                      LA_PR016,
+                      LA_PR017,
+                      LA_IN002,
+                      LA_IN003,
+                      LA_CO005,
+                      LA_NU007,
+                      LA_RE001,
+                      LA_RE002,
+                      LA_RE003,
+                      LA_RE004,
+                      LA_RE005,
+                      LA_RE006,
+                      LA_RE007,
+                      LA_RE008,
+                      LA_FO001,
+      *--- 01/MAY/2002 TIS by Witoon ---------------------- START -----*
+                      LA_TI002,
+                      LA_TI003,
+                      LA_TI004,
+      *--- 01/MAY/2002 TIS by Witoon ---------------------- END -------*
+                      LA_TI005,
+      *--- 15/MAY/2009 Version by Veerayuth----------------------------*
+                      LA_VE001,
+      *--- 20100728 TIS-NAME by Onuma T.-------------------------------*
+                      LA_VE002,
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+                      LA_SI001,
+                      LA_RE009,
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *--- 20100728 TIS-QR by Onuma T.-------------------------------*
+                      LA_VE003)
+              VALUES (:BED007PA-CO001,
+                      :BED007LA-TI001,
+                      SYSDATE,
+                      NULL,
+                      NULL,
+                      :BED007AP-PR001,
+                      :BED007CL-LO001,
+                      :BED007BA-PR002,
+                      :BED007LA-PR011,
+                      :BED007LA-PR012,
+                      :BED007LA-PR013,
+                      :BED007LA-IN001,
+                      :BED007LA-NE002,
+                      :BED007LA-NE001,
+                      :BED007LA-GR003,
+                      :BED007LA-GR002,
+                      :BED007LA-GR001,
+                      :BED007LA-CC001,
+                      :BED007LA-CH002,
+                      :BED007LA-CH001,
+                      :BED007LA-PR015,
+                      :BED007LA-PR014,
+                      :BED007LA-NU001,
+                      :BED007LA-CO002,
+                      :BED007LA-CO001,
+                      :BED007LA-CO004,
+                      :BED007LA-CO003,
+                      :BED007LA-EX002,
+                      :BED007LA-EX001,
+                      :BED007LA-OI002,
+                      :BED007LA-OI001,
+                      :BED007LA-NU004,
+                      :BED007LA-NU003,
+                      :BED007LA-NU006,
+                      :BED007LA-NU005,
+                      :BED007LA-CA002,
+                      :BED007LA-CA001,
+                      :BED007LA-PR016,
+                      :BED007LA-PR017,
+                      :BED007LA-IN002,
+                      :BED007LA-IN003,
+                      :BED007LA-CO005,
+                      :BED007LA-NU007,
+                      :BED007LA-RE001,
+                      :BED007LA-RE002,
+                      :BED007LA-RE003,
+                      :BED007LA-RE004,
+                      :BED007LA-RE005,
+                      :BED007LA-RE006,
+                      :BED007LA-RE007,
+                      :BED007LA-RE008,
+                      :BED007LA-FO001,
+      *--- 01/MAY/2002 TIS by Witoon ---------------------- START -----*
+                      :BED007LA-TI002,
+                      :BED007LA-TI003,
+                      :BED007LA-TI004,
+      *--- 01/MAY/2002 TIS by Witoon ---------------------- END -------*
+      *--- 21/FEB/2005 TIS by Yamada ----------------------------------*
+                      :BED007LA-TI005,
+      *--- 15/MAY/2009 Version by Veerayuth----------------------------*
+                      :BED007LA-VE001,
+      *--- 20100728 TIS-NAME by Onuma T.-------------------------------*
+                      :BED007LA-VE002,
+      *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
+                      :BED007LA-SI001,
+                      :BED007LA-RE009,
+      *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
+      *--- 20100728 TIS-NAME by Onuma T.-------------------------------*
+                      :BED007LA-VE003)
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               MOVE  "ERR"             TO  SWABEND
+               MOVE  "TBLED007"        TO  EX0001-MSGBODY-4
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+           END-EVALUATE
+
+           CONTINUE.
+       C13-900.
+           EXIT.
+
+
+      * Onuma T. 20181108 Automated warehouse prj. AR Label at SY STA
+       C14-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C14                                                 *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " C14 SEC ".
+
+       C14-100.
+
+           MOVE  "LABEL-AR" TO  PBPOUTFORM-NAME
+           MOVE SPACE TO PBPOUTSEND-DATA
+           MOVE  0                    TO  PBPOUTDATA-CNT
+
+
+      *    // DEVELOPMENT NOT PRINT 20/FEB/2013 //
+           IF    PBPOUTPRINTER-ID  =      "CPUBT999"
+                 DISPLAY  "DEVELOPMENT NOT PRINT OUT"
+                 GO  TO  C14-900
+           END-IF
+      * new target Printer for QR and AR label start
+           IF  PCOM96BA-PR005  <>  "NONE"  THEN
+               DISPLAY "AR Label Checking at ="PCOM96BA-PR005
+               MOVE  PCOM96BA-PR005        TO  PBPOUTPRINTER-ID
+           ELSE
+               DISPLAY "No printer setting at TBLWW001.BA_PR005.pls chk"
+               GO  TO  C14-900
+           END-IF
+      * new target Printer for QR and AR label end.
+           EXEC  SQL
+               SELECT DB_ST001 INTO :WWDBSTATUS FROM DBSTATUS
+           END-EXEC
+
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               ADD   1                 TO  JED01
+               DISPLAY " SQLCODE = " SQLCODE
+               GO  TO  C14-900
+           END-EVALUATE
+      *    Normal mode
+           IF WWDBSTATUS = "0"
+             DISPLAY  " *** CALL WXBCPLBL  ***"
+             CALL  "WXBCPLBL"    USING  PBPOUTPRINTER-ID
+                                        PBPOUTFORM-NAME
+                                        BY VALUE PBPOUTDATA-CNT
+                                        BY REFERENCE PBPOUTSEND-DATA
+                                        BY VALUE PBPOUTPRINT-NUM
+                                        RETURNING PBPOUTRTN-CODE
+           ELSE
+               DISPLAY  "   ***  Emergent mode  ***"
+           END-IF
+
+      *    * -TEST-S-*
+             DISPLAY  "   ***  NORMAL END ALL ***"
+             DISPLAY  "   PBPOUTRTN-CODE ="   PBPOUTRTN-CODE
+      *    * -----E-*
+      *    END-PERFORM
+      *    CHANGE INSPECTION COMMAND 1998/05/21 BY YAMADA
+           EVALUATE PBPOUTRTN-CODE
+             WHEN  ZERO
+             WHEN  "1109"
+               CONTINUE
+             WHEN  "1101"
+             WHEN  "1102"
+             WHEN  "1105"
+             WHEN  "1106"
+             WHEN  OTHER
+               MOVE  "EX000104"    TO     PSSENDMSGID
+               MOVE  "ERR"         TO     SWCHK
+               PERFORM  V0-MSG-DIVIDE
+           END-EVALUATE
+
+           CONTINUE.
+       C14-900.
+           EXIT.
+      * Onuma T. 20181108 Automated warehouse prj. AR Label at SY END
+      /
+
+      /
+      * Onuma T. 20171106 Automated warehouse prj. QR Label at SY STA
+       C15-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C15                                                 *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " C15 SEC ".
+
+       C15-100.
+
+           MOVE  "LABEL-QR" TO  PBPOUTFORM-NAME
+      *    WWXBCP-BARCODE-P --have also Page_and_Version
+      *    WWXBCP-PA-NO001  -- result like 1-7-8-A-0759
+           MOVE WWXBCP-BARCODE TO WWXBCP-BARCODE-D (1:8)
+           MOVE "D" TO WWXBCP-BARCODE-D (9:1)
+           STRING WWXBCP-BARCODE-D "*"
+                  WWXBCP-BARCODE-D "*"
+                  WWXBCP-BARCODE-D "*"
+                  WWXBCP-BARCODE-D "*"
+                  WWXBCP-BARCODE-D "*"
+                  DELIMITED  BY  SIZE
+            INTO  PBPOUTSEND-DATA
+            END-STRING
+            MOVE  5                    TO  PBPOUTDATA-CNT
+
+
+      *    // DEVELOPMENT NOT PRINT 20/FEB/2013 //
+           IF    PBPOUTPRINTER-ID  =      "CPUBT999"
+                 DISPLAY  "DEVELOPMENT NOT PRINT OUT"
+                 GO  TO  C15-900
+           END-IF
+
+      * new target Printer for QR and AR label start
+           IF  PCOM96BA-PR005  <>  "NONE"  THEN
+               DISPLAY "QR Label Checking at ="PCOM96BA-PR005
+               MOVE  PCOM96BA-PR005        TO  PBPOUTPRINTER-ID
+           ELSE
+               DISPLAY "No printer setting at TBLWW001.BA_PR005.pls chk"
+               GO  TO  C15-900
+           END-IF
+      * new target Printer for QR and AR label end.
+
+           EXEC  SQL
+               SELECT DB_ST001 INTO :WWDBSTATUS FROM DBSTATUS
+           END-EXEC
+
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               ADD   1                 TO  JED01
+               DISPLAY " SQLCODE = " SQLCODE
+               GO  TO  C15-900
+           END-EVALUATE
+      *    Normal mode
+           IF WWDBSTATUS = "0"
+             DISPLAY  " *** CALL WXBCPLBL  ***"
+             CALL  "WXBCPLBL"    USING  PBPOUTPRINTER-ID
+                                        PBPOUTFORM-NAME
+                                        BY VALUE PBPOUTDATA-CNT
+                                        BY REFERENCE PBPOUTSEND-DATA
+                                        BY VALUE PBPOUTPRINT-NUM
+                                        RETURNING PBPOUTRTN-CODE
+           ELSE
+               DISPLAY  "   ***  Emergent mode  ***"
+           END-IF
+
+      *    * -TEST-S-*
+             DISPLAY  "   ***  NORMAL END ALL ***"
+             DISPLAY  "   PBPOUTRTN-CODE ="   PBPOUTRTN-CODE
+      *    * -----E-*
+      *    END-PERFORM
+      *    CHANGE INSPECTION COMMAND 1998/05/21 BY YAMADA
+           EVALUATE PBPOUTRTN-CODE
+             WHEN  ZERO
+             WHEN  "1109"
+               CONTINUE
+             WHEN  "1101"
+             WHEN  "1102"
+             WHEN  "1105"
+             WHEN  "1106"
+             WHEN  OTHER
+               MOVE  "EX000104"    TO     PSSENDMSGID
+               MOVE  "ERR"         TO     SWCHK
+               PERFORM  V0-MSG-DIVIDE
+           END-EVALUATE
+
+           CONTINUE.
+       C15-900.
+           EXIT.
+      * Onuma T. 20171106 Automated warehouse prj. QR Label at SY END
+      /
+
+       C2-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C2                                                  *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " C2 SEC ".
+
+       C2-100.
+           MOVE  WW0000-PA-NO001       TO  WWW001PA-CO001
+           MOVE  "EDC10200"            TO  WWW001AP-PR001.
+           CALL  "DWWCOM01"            USING  WWW001DWWCOM01.
+
+           DISPLAY "DWWCOM01 RETURN " WWW001DWWCOM01.
+           IF  WWW001RE-CO002  =  "8"
+               GO  TO  C2-900
+           ELSE
+               IF  WWW001RE-CO002  =  "9"
+                   MOVE  "WEDC2013"        TO  PSSENDMSGID
+                   PERFORM  V0-MSG-DIVIDE
+               ELSE
+      *****        WWW001RE-CO002 = 0,1,2 CASE
+                   MOVE    "A"                  TO      WXQSMDSA
+      *###     MOVE    "CPUCT001"           TO      WXQSTRMS
+                   MOVE  "EDC10200"            TO      WXQSMODS
+      *----------------------------------------------------------------*
+      * Project Name : SPCS Revamp
+      * Reason : MQ Connect : Environment Variable
+      * Updated Date : 2016/06/16
+      * Reviser : S.Kan NSSOL nanken
+      *----------------------------------------------------------------*
+                   MOVE  MQQMGR                TO      WXQSTRMD
+      *            MOVE  "CSV1.mqm"            TO      WXQSTRMD
+                   MOVE  "DCB00100"            TO      WXQSMODD
+                   MOVE  9                     TO      WXQSDLEN
+                   MOVE  WWW001RE-CO002        TO      MDWW02-JUDGE
+                   MOVE  WW0000-PA-NO001       TO      MDWW02PA-CO001
+                   MOVE  MDWW02DWWM001         TO      WXQSDOUT
+
+                   DISPLAY "DCB00100 REQ " WXQSDOUT(1:20)
+                   DISPLAY "* MDWW02PA-CO001 = " MDWW02PA-CO001
+                   PERFORM  WXQSREQ
+
+                   IF  NOT (WXQSCC              =       WXQS-INF-NORMAL)
+                       MOVE  "EX000130"         TO      PSSENDMSGID
+                       PERFORM  V0-MSG-DIVIDE
+                   END-IF
+               END-IF
+           END-IF
+
+           CONTINUE.
+
+       C2-900.
+           EXIT.
+
+      /
+       V0-MSG-DIVIDE         SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V0     MSG  DIVIDE                                  *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " V0 SEC ".
+
+       V0-100.
+
+           MOVE  SPACE                 TO  PSSENDMSGBODY
+      *
+           EVALUATE  PSSENDMSGID
+      *    * ----- <<      ORACLE  ERROR                      >> --- *
+             WHEN  "EX000001"
+               MOVE  "1"               TO  PSSENDEXPRESS
+               MOVE  SQLCODE           TO  WWORAC-SQLCODE
+               MOVE  WWORAC-SQLCODE    TO  EX0001-MSGBODY-1
+               MOVE  SQLERRMC          TO  EX0001-MSGBODY-2
+               MOVE  ORASTXTC          TO  EX0001-MSGBODY-3
+               MOVE  ORASFNMC          TO  EX0001-MSGBODY-4
+               MOVE  EX0001-MSGBODY    TO  PSSENDMSGBODY
+               PERFORM  V1-POPMSGOUT
+      *
+             WHEN  "EX000003"
+               MOVE  "1"               TO  PSSENDEXPRESS
+               MOVE  ERR-MSG           TO  EX0003-MSGBODY-1
+               MOVE  EX0003-MSGBODY    TO  PSSENDMSGBODY
+               PERFORM  V1-POPMSGOUT
+
+      *    * ----- <<      MQ      ERROR                      >> --- *
+
+             WHEN  "EX000129"
+             WHEN  "EX000130"
+             WHEN  "EX000131"
+               MOVE  "0"               TO  PSSENDEXPRESS
+               MOVE  WXQSCC            TO  EXWXQS-MSGBODY-1
+               MOVE  WXQSRC            TO  EXWXQS-MSGBODY-2
+               MOVE  WXQSMSG           TO  EXWXQS-MSGBODY-3
+               MOVE  EXWXQS-MSGBODY    TO  PSSENDMSGBODY
+      *         PERFORM  V3-POP-PRTMSGOUT
+               PERFORM  V1-POPMSGOUT
+      *
+             WHEN  "EX000128"
+               MOVE  "0"               TO  PSSENDEXPRESS
+               MOVE  PCOM92RE-CO002    TO  EX0003-MSGBODY-1
+               MOVE  EX0003-MSGBODY    TO  PSSENDMSGBODY
+               PERFORM  V3-POP-PRTMSGOUT
+
+      *    * ----- <<   WXBCPOUT   ERROR                      >> --- *
+             WHEN  "EX000104"
+               MOVE  "1"                   TO  PSSENDEXPRESS
+               MOVE  PBPOUTRTN-CODE        TO  EX0104-RCD
+               MOVE  MDC001PA-NO001(MDC00) TO  EX0104PA-CO001
+               MOVE  EX0104-DATA           TO  PSSENDMSGBODY
+               IF  SWPRT  =  "OK "
+                   MOVE  "ERR"             TO  SWPRT
+                   PERFORM  V3-POP-PRTMSGOUT
+               ELSE
+                   PERFORM  V2-PRTMSGOUT
+               END-IF
+             WHEN  "WX000008"
+               MOVE  "0"                   TO  PSSENDEXPRESS
+               MOVE  PBPOUTRTN-CODE        TO  WX0008-RCD
+               MOVE  MDC001PA-NO001(MDC00) TO  WX0008PA-CO001
+               MOVE  PBPOUTPRINTER-ID      TO  WX0008-PRTID
+               MOVE  WX0008-DATA           TO  PSSENDMSGBODY
+               IF  SWPRT  =  "OK "
+                   MOVE  "ERR"             TO  SWPRT
+                   PERFORM  V3-POP-PRTMSGOUT
+               ELSE
+                   PERFORM  V2-PRTMSGOUT
+               END-IF
+
+      *------------------------------- 13/OCT/2000 by Chumpol  FROM -*
+             WHEN  "EX000008"
+               MOVE  "0"                   TO  PSSENDEXPRESS
+               MOVE  PBPOUTRTN-CODE        TO  WX0008-RCD
+               MOVE  MDC001PA-NO001(MDC00) TO  WX0008PA-CO001
+               MOVE  PBPOUTPRINTER-ID      TO  WX0008-PRTID
+               MOVE  WX0008-DATA           TO  PSSENDMSGBODY
+               PERFORM  V3-POP-PRTMSGOUT
+      *------------------------------- 13/OCT/2000 by Chumpol  TO   -*
+      *    * ----- <<        IEDC  ERROR                      >> --- *
+
+             WHEN  "WEDC1011"
+               MOVE  "0"               TO  PSSENDEXPRESS
+               MOVE  EED011-MSGBODY    TO  PSSENDMSGBODY
+               PERFORM  V2-PRTMSGOUT
+      *
+             WHEN  "WEDC1012"
+               MOVE  "0"               TO  PSSENDEXPRESS
+               PERFORM  V1-POPMSGOUT
+      *
+             WHEN  "WEDC1013"
+               MOVE  "0"               TO  PSSENDEXPRESS
+               MOVE  "9"               TO  EED013-RCD
+               MOVE  MDC001PA-NO001(MDC00) TO  EED013PA-CO001
+               MOVE  EED013-DATA       TO  PSSENDMSGBODY
+               PERFORM  V2-PRTMSGOUT
+      *
+             WHEN  "WX000005"
+               MOVE  "0"               TO  PSSENDEXPRESS
+               MOVE  WX0005-MSGBODY    TO  PSSENDMSGBODY
+               PERFORM  V3-POP-PRTMSGOUT
+
+      *    * ----- <<      NOMAL END MSG                      >> --- *
+             WHEN  "IX000001"
+               MOVE  "0"               TO  PSSENDEXPRESS
+               MOVE  SPACE             TO  PSSENDMSGBODY
+               PERFORM  V1-POPMSGOUT
+
+             WHEN   "EX000144"
+               MOVE  "1"             TO  PSSENDEXPRESS
+               MOVE  PRECONRTN-CD    TO  EX0144-MSGBODY-1
+               MOVE  PRECONSQLCODE   TO  EX0144-MSGBODY-2
+               MOVE  EX0144-MSGBODY  TO  PSSENDMSGBODY
+               PERFORM  V1-POPMSGOUT
+
+      ******-- 22/Apr/1999 (MISS SHIPMENT)    START           >> --- *
+             WHEN  "IEDC1011"
+               MOVE  "0"             TO  PSSENDEXPRESS
+               MOVE  IED101-MSGBODY  TO  PSSENDMSGBODY
+               PERFORM  V1-POPMSGOUT
+      ******-- 22/Apr/1999 (MISS SHIPMENT)     END            >> --- *
+
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
+             WHEN  "WEDC2014"
+               MOVE  "0"               TO  PSSENDEXPRESS
+               PERFORM  V1-POPMSGOUT
+      *    * ----- << ADD  30/MAY/2000  SUGIYAMA  END   >> --- *
+
+      *------------------------------- 20/JUL/2000 by Sugiyama FROM -*
+             WHEN  "WEDC2015"
+                 MOVE  "0"             TO  PSSENDEXPRESS
+                 PERFORM  V1-POPMSGOUT
+      *------------------------------- 20/JUL/2000 by Sugiyama TO   -*
+
+           END-EVALUATE
+      *    * -ýiS-*
+             DISPLAY  " MSG DATA -PSSENDONODE="       PSSENDONODE
+             DISPLAY  "          -PSSENDDNODE="       PSSENDDNODE
+             DISPLAY  "          -PSSENDPGMID="       PSSENDPGMID
+             DISPLAY  "          -PSSENDEXPRESS="     PSSENDEXPRESS
+             DISPLAY  "          -PSSENDMSGID="       PSSENDMSGID
+             DISPLAY  "          -PSSENDMSGBODY="
+                                               PSSENDMSGBODY(1:100).
+      *    * -----E-*
+           CONTINUE.
+       V0-900.
+           EXIT.
+
+      /
+       V1-POPMSGOUT          SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V1     POP MSGOUT                                   *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " V1 SEC ".
+
+       V1-100.
+           MOVE     "CPUSTCS1"          TO      PSSENDONODE
+           MOVE     WXQSTRMS            TO      PSSENDDNODE
+           MOVE     "EDC10200"          TO      PSSENDPGMID
+           PERFORM  X0-MSGOUT-PROCESS
+           CONTINUE.
+       V1-900.
+           EXIT.
+
+      /
+       V2-PRTMSGOUT          SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V2     PRTMSGOUT                                    *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " V2 SEC ".
+
+       V2-100.
+           PERFORM  V9-WWWCOM92-CALL
+           IF  NOT  (PCOM92RE-CO002     =       "7")
+               MOVE "CPUSTCS1"          TO      PSSENDONODE
+               MOVE "EDC10200"          TO      PSSENDPGMID
+               PERFORM  X0-MSGOUT-PROCESS
+           END-IF
+           CONTINUE.
+       V2-900.
+           EXIT.
+
+      /
+       V3-POP-PRTMSGOUT      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V3     POP  PRTMSGOUT                               *
+      *    *                                                         *
+      *    ***********************************************************
+           DISPLAY " V3 SEC ".
+       V3-100.
+           MOVE     "CPUSTCS1"          TO      PSSENDONODE
+      *------------------------------- 13/OCT/2000 by Chumpol  FROM -*
+           IF   NOT ( WW0000-CK-DATA01   =   "1" )  THEN
+                MOVE     WXQSTRMS            TO      PSSENDDNODE
+                MOVE     "EDC10200"          TO      PSSENDPGMID
+                PERFORM  X0-MSGOUT-PROCESS
+
+                PERFORM  V9-WWWCOM92-CALL
+                IF  NOT  (PCOM92RE-CO002     =       "7")
+                    MOVE "CPUSTCS1"          TO      PSSENDONODE
+                    MOVE "EDC10200"          TO      PSSENDPGMID
+                    PERFORM  X0-MSGOUT-PROCESS
+                END-IF
+           ELSE
+                MOVE     'CPUCT006'          TO      PSSENDDNODE
+                MOVE     "EDC10200"          TO      PSSENDPGMID
+                PERFORM  X0-MSGOUT-PROCESS
+           END-IF
+      *------------------------------- 13/OCT/2000 by Chumpol  TO   -*
+
+
+           CONTINUE.
+       V3-900.
+           EXIT.
+
+      /
+       V9-WWWCOM92-CALL      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V9     WWWCOM92  CALL                               *
+      *    *                                                         *
+      *    ***********************************************************
+
+       V9-100.
+      *    * -ýiS-*
+             DISPLAY  " V9-100  ".
+      *    * -----E-*
+
+           INITIALIZE  PCOM92WWWCOM92
+           MOVE     WXQSTRMS            TO      PCOM92CL-LO001
+           EXEC  SQL  EXECUTE
+               BEGIN
+                 WWWCOM92(:PCOM92CL-LO001,
+                          :PCOM92LA-PR001,
+                          :PCOM92SE-PR001,
+                          :PCOM92RE-CO002);
+               END;
+           END-EXEC
+           EVALUATE  PCOM92RE-CO002
+             WHEN    "0"
+             WHEN    "7"
+               CONTINUE
+             WHEN    "1"
+             WHEN    "2"
+               MOVE  PCOM92LA-PR001     TO      PSSENDDNODE
+             WHEN    "3"
+               MOVE  PCOM92SE-PR001     TO      PSSENDDNODE
+             WHEN  OTHER
+               MOVE  "EX000128"         TO      PSSENDMSGID
+               MOVE  "CPUSTCS1"         TO      PSSENDONODE
+               MOVE  WXQSTRMS           TO      PSSENDDNODE
+               MOVE  "EDC10200"         TO      PSSENDPGMID
+               MOVE  "ERR"             TO  SWABEND
+               PERFORM  X0-MSGOUT-PROCESS
+           END-EVALUATE
+           CONTINUE.
+       V9-900.
+           EXIT.
+
+      /
+       X0-MSGOUT-PROCESS     SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     X0     MSGOUT  PROCESS                              *
+      *    *                                                         *
+      *    ***********************************************************
+
+       X0-100.
+      *    * -ýiS-*
+             DISPLAY  " X0-100  ".
+      *    * -----E-*
+
+            CALL      "WXMSSEND"          USING   PSSENDONODE
+                                                  PSSENDDNODE
+                                                  PSSENDPGMID
+                                                  PSSENDEXPRESS
+                                                  PSSENDMSGID
+                                                  PSSENDMSGBODY
+                                                  PSSENDRTNCODE
+            IF  NOT   (PSSENDRTNCODE      =       ZERO)
+      *          PERFORM  Y0-ABEND-PROCESS
+               MOVE  "ERR"             TO  SWABEND
+            END-IF.
+           CONTINUE.
+       X0-900.
+           EXIT.
+
+      /
+       Y0-ABEND-PROCESS      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     Y0     ABEND    PROCESS                             *
+      *    *                                                         *
+      *    ***********************************************************
+       Y0-100.
+      *    * -ýiS-*
+             DISPLAY  " Y0-100  ".
+      *    * -----E-*
+
+           EXEC  SQL  ROLLBACK  RELEASE  END-EXEC
+           MOVE     "EDC10200"          TO      PUDUMPPGMID
+           CALL     "WXUDUMP"           USING   PUDUMPDUMPSTR
+                                                PUDUMPDUMPEND
+                                                PUDUMPPGMID
+                                                PUDUMPRTNCODE.
+           MOVE     "9"                 TO      RETURN-CODE.
+           STOP  RUN.
+       Y0-900.
+           EXIT.
+      /
+       Z0-AFTER-PROCESS      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     Z0     AFTER  PROCESS                               *
+      *    *                                                         *
+      *    ***********************************************************
+
+       Z0-100.
+      *    * -ýiS-*
+             DISPLAY  " Z0-100  ".
+      *    * -----E-*
+
+           IF  NOT ( EED011-MSGBODY    =   SPACE )
+               MOVE  "-"               TO  EED011-S(JED01)
+               IF   JED01  >  1
+                 SUBTRACT  1             FROM  JED01
+                 PERFORM  WITH TEST AFTER
+                        VARYING  JED01  FROM  JED01  BY  -1
+                        UNTIL  JED01  <  2
+                   MOVE  "-"             TO  EED011-S(JED01)
+                   MOVE  " "             TO  EED011-N(JED01)
+                 END-PERFORM
+               END-IF
+               MOVE  "WEDC1011"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               MOVE  "WEDC1012"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+           END-IF
+
+      *    * ----- <<      NOMAL END MSG                      >> --- *
+      *    IF  MDC001UN-NO001          =   "PC"
+      *      AND    EED011-MSGBODY     =   SPACE
+      *        MOVE  "IX000001"        TO  PSSENDMSGID
+      *        PERFORM  V0-MSG-DIVIDE
+      *    END-IF.
+
+           MOVE  "0000"                TO  WXQSAPCD
+           PERFORM  WXQSEND
+
+           IF  NOT (WXQSCC             =   WXQS-INF-NORMAL)
+               MOVE  "EX000131"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               MOVE  "ERR"             TO  SWABEND
+           END-IF
+
+           CONTINUE.
+
+       Z0-900.
+           EXIT.
+
+
+      /
+       ERROR-PROC            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     ERROR  PROC                                         *
+      *    *                                                         *
+      *    ***********************************************************
+
+       ERROR-PROC-100.
+      *    * ----- <<      RTS  ERROR  PROCESS                >> --- *
+       ENTRY  "ERROR-PROC-EDC10200"  USING  ERR-MSG
+           MOVE     "EX000003"          TO       PSSENDMSGID
+           PERFORM  V0-MSG-DIVIDE
+           CONTINUE.
+       ERROR-PROC-900.
+           EXIT.
+
+      *    * ----- <<      MACRO   PROCESS   CPY              >> --- *
+           COPY  "WXQSPROC.CPY".
+
