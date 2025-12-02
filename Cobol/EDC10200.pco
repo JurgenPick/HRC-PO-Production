@@ -2558,6 +2558,7 @@
       *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--Start
                    IF (WWXBCP-LA-PR019(1:8) = "TIS 528")
                      AND (WK-CHK-TIS-NAME = "1") THEN
+                     MOVE "TIS 528 HR1" TO WWXBCP-LA-PR019
                      MOVE "TIS 528-2560" TO WWXBCP-TIS-NAME
                      MOVE "https://appdb.tisi.go.th/Q/i.php?d=193323436"
                      TO WWXBCP-TIS-QR
