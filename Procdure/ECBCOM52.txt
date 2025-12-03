@@ -1,0 +1,474 @@
+CREATE OR REPLACE PROCEDURE SPCS.ECBCOM52
+  (p_pa_co001  IN VARCHAR2,
+   p_ap_pr001  IN VARCHAR2,
+   p_re_co002 OUT VARCHAR2)
+IS
+   /* Package coil table */
+   CURSOR txx00801 IS
+       SELECT pa_co001,
+              re_up001,
+              ac_cl001,
+              ap_pr001,
+              pr_sp003,
+              me_pr001,
+              me_pr002,
+              la_pr004,
+              la_pr003,
+              la_pr001,
+              pr_cl001,
+/*    Spec change  22/Sep/1999   by yas                                      */
+              de_lo009,
+              pr_th002,  -- 23/JUL/2002 No.60 by Witoon
+              pr_wi002,  -- 04/JUN/2025 Add by Chananan IM.2459
+              de_lo001,  -- 21/JUN/2004 add by Witoon
+              pa_st004   -- 21/JUN/2004 add by Witoon
+         FROM cs_tblxx008
+        WHERE RTRIM(pa_co001) = RTRIM(p_pa_co001)
+          FOR UPDATE;
+   bxx008 txx00801%rowtype;
+
+   /*                    */
+   /*    Spec change  22/Sep/1999   by yas                                   */
+   CURSOR txx00101 IS
+       SELECT a.sp_sy001,
+              a.sk_cl001,
+              a.su_fi002,
+              a.st_ty001,
+              a.te_gr001,
+/*    Spec change  22/Sep/1999   by yas                                      */
+              a.hc_sp001
+         FROM cs_tblxx001 a,
+              cs_tblxx008 b
+        WHERE RTRIM(a.pr_sp003) = RTRIM(b.pr_sp003)
+          AND RTRIM(b.pa_co001) = RTRIM(p_pa_co001);
+   bxx001 txx00101%rowtype;
+
+   /* Work area */
+   w_la_pr004  varchar2(55);            /* labeled product specification     */
+   w_la_pr001  varchar2(80);            /* labeled product name              */
+   w_la_pr003  varchar2(55);            /* labeled product size              */
+   w_pa_st004  varchar2(05);            /* packaging style                   */
+
+/*    Spec change  22/Sep/1999   by yas                                      */
+   w_su_fi001  varchar2(02);            /* surface finish                    */
+
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                          */
+   w_sp_sy001      varchar2(10);            /* specifcation symbol           */
+   w_sp_sy001_astm varchar2(10);            /* specifcation symbol for ASTM  */
+   w_sk_cl001      varchar2(02);            /* skin-passing classification   */
+   w_te_gr001      varchar2(02);            /* temper garde                  */
+   w_st_ty001      varchar2(01);            /* steel type                    */
+
+   -- Add for memo 460 12/JUL/2002 by Witoon
+   w_sp_sy001_crs  varchar2(10);            -- spec. symbol for crs 2nd
+   w_count_41      number;                  -- count process code 41
+   w_count_31      number;                  -- count process code 31
+
+   txx008_no_data_found EXCEPTION;
+   txx001_no_data_found EXCEPTION;
+BEGIN
+/*****************************************************************************/
+/*                                                                           */
+/*****************************************************************************/
+
+      p_re_co002 := '0';                /* Set Return code                   */
+
+      OPEN txx00801;
+      FETCH txx00801 INTO bxx008;
+
+      IF txx00801%NOTFOUND THEN
+         RAISE txx008_no_data_found;
+      END IF;
+
+      CLOSE txx00801;
+
+/*****************************************************************************/
+/*   labeled product specification                                           */
+/*****************************************************************************/
+/*    Spec change No166  10/Nov/1999   by yas                                */
+/*    Spec change  22/Sep/1999   by yas                                      */
+
+
+      OPEN txx00101;
+      FETCH txx00101 INTO bxx001;
+
+      IF txx00101%NOTFOUND THEN
+         RAISE txx001_no_data_found;
+      END IF;
+
+      IF bxx008.de_lo009 is null THEN
+         w_su_fi001 := bxx001.su_fi002;
+/*    Spec change No.239 on 18/Aug/2000   by Sasaki                                   */
+         w_sp_sy001 := bxx001.sp_sy001;
+         w_sk_cl001 := bxx001.sk_cl001;
+         w_te_gr001 := bxx001.te_gr001;
+         w_st_ty001 := bxx001.st_ty001;
+      ELSE
+         BEGIN
+            SELECT co_su001,
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+                   sp_sy001,
+                   co_sk001,
+                   co_te003,
+                   co_st001
+              INTO w_su_fi001,
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+                   w_sp_sy001,
+                   w_sk_cl001,
+                   w_te_gr001,
+                   w_st_ty001
+              FROM cs_tblxx004
+             WHERE co_no001 = SUBSTR(bxx008.de_lo009,1,12);
+
+         EXCEPTION
+              WHEN OTHERS  THEN
+                   w_su_fi001 := bxx001.su_fi002;
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+                   w_sp_sy001 := bxx001.sp_sy001;
+                   w_sk_cl001 := bxx001.sk_cl001;
+                   w_te_gr001 := bxx001.te_gr001;
+                   w_st_ty001 := bxx001.st_ty001;
+         END;
+      END IF;
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+      w_sp_sy001_astm := w_sp_sy001;
+
+      IF SUBSTR(bxx008.pr_cl001,1,1) = 'R' THEN
+         /* For secondary reprocess coil by Witoon <START> */
+         IF w_su_fi001 = 'B%' THEN
+            w_su_fi001 := 'B';
+         ELSIF w_su_fi001 LIKE 'D%' THEN
+            w_su_fi001 := 'D';
+         ELSIF w_su_fi001 = 'R' THEN
+            w_su_fi001 := 'D';
+         END IF;
+         /* For secondary reprocess coil by Witoon <END> */
+
+         IF (SUBSTR(bxx001.hc_sp001,1,3) = 'RSC' OR SUBSTR(bxx001.hc_sp001,1,3) = 'RSD'
+         OR  SUBSTR(bxx001.hc_sp001,1,3) = 'RSF' OR SUBSTR(bxx001.hc_sp001,1,3) = 'RSG') THEN
+/*    Spec change No.268 on 14/Sep/2000   by Chumpol                                  */
+-------  AND SUBSTR(bxx001.hc_sp001,7,2) = 'ZZ'  THEN     --------
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+--          w_la_pr004 :=  'SPCD' || '-' || bxx001.sk_cl001 ||
+            -- 12/JUL/2002 No.460 by Witoon <<START>>
+            SELECT count(*)
+              INTO w_count_41
+              FROM cs_tblxx019
+             WHERE pr_co001 = '41'
+            START WITH ch_ma001 = p_pa_co001
+                   AND ch_pr001 = '1'
+            CONNECT BY PRIOR pa_ma001 = ch_ma001
+                   AND PRIOR pa_pr001 = ch_pr001;
+
+            SELECT count(*)
+              INTO w_count_31
+              FROM cs_tblxx019
+             WHERE pr_co001 = '31'
+            START WITH ch_ma001 = p_pa_co001
+                   AND ch_pr001 = '1'
+            CONNECT BY PRIOR pa_ma001 = ch_ma001
+                   AND PRIOR pa_pr001 = ch_pr001;
+
+            if w_count_41 > 0 then
+               w_sp_sy001_crs := 'SPCC';
+            else
+               if w_count_31 > 0 then
+                  w_sp_sy001_crs := 'SPCD';
+               else
+                  if bxx008.pr_th002 <= 0.35 then
+                     w_sp_sy001_crs := 'SPCC';
+                  else
+                     w_sp_sy001_crs := 'SPCD';
+                  end if;
+               end if;
+            end if;
+
+            --w_la_pr004 :=  'SPCD' || '-' || w_sk_cl001 ||
+            --               w_su_fi001;
+            w_la_pr004 :=  w_sp_sy001_crs || '-' || w_sk_cl001 ||
+                           w_su_fi001;
+            -- 12/JUL/2002 Memo 460 by Witoon <<START>>
+         ELSE
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+--          w_la_pr004 :=  'SPCC' || '-' || bxx001.sk_cl001 ||
+            w_la_pr004 :=  'SPCC' || '-' || w_sk_cl001 ||
+                           w_su_fi001;
+
+         END IF;
+      ELSE
+         /* For secondary reprocess coil by Witoon <START> */
+         IF w_su_fi001 LIKE 'D%' THEN
+            w_su_fi001 := 'D';
+         END IF;
+         /* For secondary reprocess coil by Witoon <END> */
+
+         IF SUBSTR(bxx008.pr_cl001,1,1) = 'G' THEN
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+--          w_la_pr004 :=  bxx001.sp_sy001 || '-' || bxx001.sk_cl001 ||
+            w_la_pr004 :=  w_sp_sy001 || '-' || w_sk_cl001 ||
+                           w_su_fi001;
+         ELSE
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                  */
+--    Add 'A623' by Luksapol 28/May/2009
+--          IF w_sp_sy001 = 'A625'  THEN
+            IF w_sp_sy001 IN ('A623','A625') THEN
+               w_sp_sy001_astm := 'SPB';
+            END IF;
+--          IF bxx001.st_ty001  =  'M' THEN
+--             w_la_pr004 :=  bxx001.sp_sy001 || ' MR '  ||
+--                            bxx001.te_gr001 || ' '     ||
+            IF w_st_ty001  =  'M' THEN
+               w_la_pr004 :=  w_sp_sy001_astm || ' MR '  ||
+                              w_te_gr001 || ' '     ||
+                              w_su_fi001;
+            ELSE
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+--             IF bxx001.st_ty001  =  'L' THEN
+--                w_la_pr004 :=  bxx001.sp_sy001 || ' L ' ||
+--                               bxx001.te_gr001 || ' '   ||
+               IF w_st_ty001  =  'L' THEN
+                  w_la_pr004 :=  w_sp_sy001_astm || ' L ' ||
+                                 w_te_gr001 || ' '   ||
+                                 w_su_fi001;
+               ELSE
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+--                IF bxx001.st_ty001  =  'D' THEN
+--                   w_la_pr004 :=  bxx001.sp_sy001 || ' D ' ||
+--                                  bxx001.te_gr001 || ' '   ||
+                  IF w_st_ty001  =  'D' THEN
+                     w_la_pr004 :=  w_sp_sy001_astm || ' D ' ||
+                                    w_te_gr001 || ' '   ||
+                                    w_su_fi001;
+                  ELSE
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+--                   w_la_pr004 :=  bxx001.sp_sy001 || ' '   ||
+--                                  bxx001.st_ty001 || ' '   ||
+--                                  bxx001.te_gr001 || ' '   ||
+                     w_la_pr004 :=  w_sp_sy001_astm || ' '   ||
+                                    w_st_ty001 || ' '   ||
+                                    w_te_gr001 || ' '   ||
+                                    w_su_fi001;
+                  END IF;
+               END IF;
+            END IF;
+         END IF;
+      END IF;
+
+      CLOSE txx00101;
+
+/*/*                                                                         */
+/*    OPEN txx00101;                                                         */
+/*    FETCH txx00101 INTO bxx001;                                            */
+/*                                                                           */
+/*    IF txx00101%NOTFOUND THEN                                              */
+/*       RAISE txx001_no_data_found;                                         */
+/*    END IF;                                                                */
+/*                                                                           */
+/*    IF SUBSTR(bxx008.pr_cl001,1,1) = 'R'                                   */
+/*    OR SUBSTR(bxx008.pr_cl001,1,1) = 'G' THEN                              */
+/*       w_la_pr004 :=  bxx001.sp_sy001 || '-' || bxx001.sk_cl001 ||         */
+/*                      bxx001.su_fi002;                                     */
+/*    ELSE                                                                   */
+/*       IF bxx001.st_ty001  =  'M' THEN                                     */
+/*          w_la_pr004 :=  bxx001.sp_sy001 || ' MR '  ||                     */
+/*                         bxx001.te_gr001 || ' '     ||                     */
+/*                         bxx001.su_fi002;                                  */
+/*       ELSE                                                                */
+/*          IF bxx001.st_ty001  =  'L' THEN                                  */
+/*             w_la_pr004 :=  bxx001.sp_sy001 || ' L ' ||                    */
+/*                            bxx001.te_gr001 || ' '   ||                    */
+/*                            bxx001.su_fi002;                               */
+/*          ELSE                                                             */
+/*             IF bxx001.st_ty001  =  'D' THEN                               */
+/*                w_la_pr004 :=  bxx001.sp_sy001 || ' D ' ||                 */
+/*                               bxx001.te_gr001 || ' '   ||                 */
+/*                               bxx001.su_fi002;                            */
+/*             ELSE                                                          */
+/*                w_la_pr004 :=  bxx001.sp_sy001 || ' '   ||                 */
+/*                               bxx001.st_ty001 || ' '   ||                 */
+/*                               bxx001.te_gr001 || ' '   ||                 */
+/*                               bxx001.su_fi002;                            */
+/*             END IF;                                                       */
+/*          END IF;                                                          */
+/*       END IF;                                                             */
+/*    END IF;                                                                */
+/*                                                                           */
+/*    CLOSE txx00101;                                                        */
+
+/*****************************************************************************/
+/*   labeled product name                                                    */
+/*****************************************************************************/
+/*    Spec change  27/Sep/1999   by yas                                      */
+      IF SUBSTR(bxx008.pr_cl001,1,1) = 'R' THEN
+       w_la_pr001 := 'Cold Rolled Steel Sheet in Coil';
+      ELSE
+         IF SUBSTR(bxx008.pr_cl001,1,1) = 'G' THEN
+            w_la_pr001 := 'Cold Rolled Steel Coil for Galvanizing';
+         ELSE
+            IF SUBSTR(bxx008.pr_cl001,1,1) = 'B' THEN
+               w_la_pr001 := 'Tin Mill Black Plate in Coil';
+            END IF;
+         END IF;
+      END IF;
+
+/*    IF SUBSTR(bxx008.pr_cl001,1,1) = 'R' THEN                              */
+/*    --w_la_pr001 := 'COLD ROOLING MILL PRODUCT';     change 10/feb/1999    */
+/*     w_la_pr001 := 'COLD ROLLING MILL PRODUCT';                            */
+/*    ELSE                                                                   */
+/*       IF SUBSTR(bxx008.pr_cl001,1,1) = 'G' THEN                           */
+/*          w_la_pr001 := 'GI BLACK PLATE';                                  */
+/*       ELSE                                                                */
+/*          IF SUBSTR(bxx008.pr_cl001,1,1) = 'B' THEN                        */
+/*             w_la_pr001 := 'TIN MILL BLACK PLATE';                         */
+/*          END IF;                                                          */
+/*       END IF;                                                             */
+/*    END IF;                                                                */
+
+/*****************************************************************************/
+/*   labeled product size                                                    */
+/*****************************************************************************/
+/*    Spec change  27/Sep/1999   by yas                                      */
+/*      w_la_pr003 := LTRIM(TO_CHAR(ROUND(bxx008.me_pr001,2),'0D99'))  || 'mm' ||*/
+/*                    'X' ||                                                     */
+/*                    LTRIM(TO_CHAR(ROUND(bxx008.me_pr002,0),'9,999')) || 'mm' ||*/
+/*                    'XC';                                                      */
+
+/*    Change  19/Oct/2000   by Chumpol                                       */
+/*      w_la_pr003 := LTRIM(TO_CHAR(bxx008.me_pr001,'0D999'))  || 'mm' ||    */
+/*                    'X' ||                                                 */
+/*                    LTRIM(TO_CHAR(ROUND(bxx008.me_pr002,0),'9,999')) || 'mm' ||  */
+/*                    'XC';                                                  */
+
+/*    Change  02/JUN/2009   by VEERAYUTH  MEMO1027                           */
+/*    Modify  04/JUN/2025   by CHANANAN   IM.2459  (Start)                   */
+/*      w_la_pr003 := LTRIM(TO_CHAR(bxx008.me_pr001,'0D999'))  || 'mm' ||    */
+/*                    'X' ||                                                 */
+/*                    bxx008.me_pr002 || 'mm' ||                             */
+/*                    'XC';                                                  */
+
+	      w_la_pr003 := LTRIM(TO_CHAR(bxx008.pr_th002,'FM0D099'))  || 'mm' ||
+                    'X' ||
+                    bxx008.pr_wi002 || 'mm' ||
+                    'XC'; 
+					
+/*    Modify  04/JUN/2025   by CHANANAN   IM.2459  (End)                     */	  
+/*    w_la_pr003 := TO_CHAR(ROUND(bxx008.me_pr001,2),'0D99') ||              */
+/*                 ' X ' ||                                                  */
+/*                 TO_CHAR(ROUND(bxx008.me_pr002,0),'9,999') ||              */
+/*                 ' X C';                                                   */
+
+/*****************************************************************************/
+/*   packaging style                                       add 31/jan/1998   */
+/*****************************************************************************/
+/*   30/apr/1999  Package style revised                                      */
+
+      -- 21/JUN/2004 secondary reprocess by Witoon <START>
+      IF SUBSTR(bxx008.de_lo001,4,1) != 'X' THEN
+      -- 21/JUN/2004 secondary reprocess by Witoon <END>
+         IF SUBSTR(bxx008.pr_cl001,1,1) = 'R' THEN
+            w_pa_st004 := 'RN100';
+         ELSE
+            IF SUBSTR(bxx008.pr_cl001,1,1) = 'G' THEN
+               w_pa_st004 := 'GN100';
+            ELSE
+              IF SUBSTR(bxx008.pr_cl001,1,1) = 'B' THEN
+                 w_pa_st004 := 'BN300';
+              END IF;
+            END IF;
+         END IF;
+      -- 21/JUN/2004 secondary reprocess by Witoon <START>
+      ELSE
+         w_pa_st004 := bxx008.pa_st004;
+      END IF;
+      -- 21/JUN/2004 secondary reprocess by Witoon <END>
+
+/*****************************************************************************/
+/*   txx00801 UPDATE                                                         */
+/*****************************************************************************/
+/*    Spec change No178  01/Dec/1999   by yas  From                          */
+      IF SUBSTR(bxx008.pr_cl001,1,1) = 'R' THEN
+         IF (SUBSTR(bxx001.hc_sp001,1,3) = 'RSC' OR SUBSTR(bxx001.hc_sp001,1,3) = 'RSD'
+         OR  SUBSTR(bxx001.hc_sp001,1,3) = 'RSF' OR SUBSTR(bxx001.hc_sp001,1,3) = 'RSG') THEN
+/*    Spec change No.268 on 14/Sep/2000   by Chumpol                                  */
+------   AND SUBSTR(bxx001.hc_sp001,7,2) = 'ZZ'  THEN  --------
+            UPDATE cs_tblxx008
+               -- 12/JUL/2002 No.460 by Witoon
+               --SET sp_sy001 = 'SPCD',
+               SET sp_sy001 = w_sp_sy001_crs,
+                   la_pr004 = w_la_pr004,
+                   la_pr003 = w_la_pr003,
+                   la_pr001 = w_la_pr001,
+                   pa_st004 = DECODE(p_ap_pr001,
+                                     'DDA00100',pa_st004,
+                                     w_pa_st004),      /* change 16/Jul/1998 */
+                   ap_pr001 = p_ap_pr001,
+                   re_up001 = SYSDATE
+             WHERE RTRIM(pa_co001) = RTRIM(p_pa_co001);
+
+         ELSE
+            UPDATE cs_tblxx008
+               SET sp_sy001 = 'SPCC',
+                   la_pr004 = w_la_pr004,
+                   la_pr003 = w_la_pr003,
+                   la_pr001 = w_la_pr001,
+                   pa_st004 = DECODE(p_ap_pr001,
+                                     'DDA00100',pa_st004,
+                                     w_pa_st004),      /* change 16/Jul/1998 */
+                   ap_pr001 = p_ap_pr001,
+                   re_up001 = SYSDATE
+             WHERE RTRIM(pa_co001) = RTRIM(p_pa_co001);
+         END IF;
+      ELSE
+/*    Spec change No.239 on 05/Jun/2000   by Sasaki                                   */
+         IF  SUBSTR(bxx008.pr_cl001,1,1) = 'B'
+      -- AND w_sp_sy001 = 'A625'  THEN
+          AND w_sp_sy001 in ('A623', 'A625')  THEN  -- Add A623 for Fig Bug by Luksapol 14/Oct/2009
+            UPDATE cs_tblxx008
+               SET sp_sy001 = 'SPB',
+                   la_pr004 = w_la_pr004,
+                   la_pr003 = w_la_pr003,
+                   la_pr001 = w_la_pr001,
+                   pa_st004 = DECODE(p_ap_pr001,
+                                     'DDA00100',pa_st004,
+                                     w_pa_st004),      /* change 16/Jul/1998 */
+                   ap_pr001 = p_ap_pr001,
+                   re_up001 = SYSDATE
+             WHERE RTRIM(pa_co001) = RTRIM(p_pa_co001);
+         ELSE
+            UPDATE cs_tblxx008
+               SET la_pr004 = w_la_pr004,
+                   la_pr003 = w_la_pr003,
+                   la_pr001 = w_la_pr001,
+                   pa_st004 = DECODE(p_ap_pr001,
+                                     'DDA00100',pa_st004,
+                                     w_pa_st004),         /* change 16/Jul/1998 */
+                   ap_pr001 = p_ap_pr001,
+                   re_up001 = SYSDATE
+             WHERE RTRIM(pa_co001) = RTRIM(p_pa_co001);
+         END IF;
+      END IF;
+
+/*    UPDATE cs_tblxx008                                                     */
+/*       SET la_pr004 = w_la_pr004,                                          */
+/*           la_pr003 = w_la_pr003,                                          */
+/*           la_pr001 = w_la_pr001,                                          */
+/*           pa_st004 = DECODE(p_ap_pr001,                                   */
+/*                             'DDA00100',pa_st004,                          */
+/*                             w_pa_st004),            /* change 16/Jul/1998 */
+/*           ap_pr001 = p_ap_pr001,                                          */
+/*           re_up001 = SYSDATE                                              */
+/*     WHERE RTRIM(pa_co001) = RTRIM(p_pa_co001);                            */
+/*    Spec change No178  01/Dec/1999   by yas   To                           */
+
+/*****************************************************************************/
+/*   EXCEPTION                                                               */
+/*****************************************************************************/
+  EXCEPTION
+      WHEN txx008_no_data_found THEN
+         p_re_co002 := '1';
+      WHEN txx001_no_data_found THEN
+         p_re_co002 := '2';
+      WHEN OTHERS THEN
+         p_re_co002 := '9';
+END ECBCOM52;
+/
