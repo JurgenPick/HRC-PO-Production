@@ -36,7 +36,10 @@ IS
               a.st_ty001,
               a.te_gr001,
 /*    Spec change  22/Sep/1999   by yas                                      */
-              a.hc_sp001
+              a.hc_sp001,
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */
+              a.pr_tr001
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */			  
          FROM cs_tblxx001 a,
               cs_tblxx008 b
         WHERE RTRIM(a.pr_sp003) = RTRIM(b.pr_sp003)
@@ -195,6 +198,11 @@ BEGIN
                            w_su_fi001;
 
          END IF;
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			          */
+		 IF (SUBSTR(bxx001.hc_sp001,1,3) = 'HAA' OR SUBSTR(bxx001.hc_sp001,1,3) = 'HAP') THEN
+            w_la_pr004 := 'JIS G3131 SPHC - PO';
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			          */
+         END IF;
       ELSE
          /* For secondary reprocess coil by Witoon <START> */
          IF w_su_fi001 LIKE 'D%' THEN
@@ -307,6 +315,12 @@ BEGIN
          ELSE
             IF SUBSTR(bxx008.pr_cl001,1,1) = 'B' THEN
                w_la_pr001 := 'Tin Mill Black Plate in Coil';
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */			   
+			ELSE
+	           IF SUBSTR(bxx001.pr_tr001,1,1) = 'H' THEN
+                  w_la_pr001 := 'Hot-Rolled Steel Wide Strip Pickled and Oiled ';
+			   END IF;
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */			   
             END IF;
          END IF;
       END IF;
@@ -404,7 +418,20 @@ BEGIN
                    ap_pr001 = p_ap_pr001,
                    re_up001 = SYSDATE
              WHERE RTRIM(pa_co001) = RTRIM(p_pa_co001);
-
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */
+         ELSIF (SUBSTR(bxx001.hc_sp001,1,3) = 'HAA' OR SUBSTR(bxx001.hc_sp001,1,3) = 'HAP') THEN
+            UPDATE cs_tblxx008
+               SET sp_sy001 = 'SPHC',
+                   la_pr004 = w_la_pr004,
+                   la_pr003 = w_la_pr003,
+                   la_pr001 = w_la_pr001,
+                   pa_st004 = DECODE(p_ap_pr001,
+                                     'DDA00100',pa_st004,
+                                     w_pa_st004),
+                   ap_pr001 = p_ap_pr001,
+                   re_up001 = SYSDATE
+             WHERE RTRIM(pa_co001) = RTRIM(p_pa_co001);	 
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */
          ELSE
             UPDATE cs_tblxx008
                SET sp_sy001 = 'SPCC',
