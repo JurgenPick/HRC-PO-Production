@@ -2387,6 +2387,7 @@
                        WHEN "HAP"
                           MOVE  "TIS 1999 SAPH 440" TO  WWXBCP-LA-PR019
                     END-EVALUATE
+                    DISPLAY "WWXBCP-LA-PR019 Case SecB" WWXBCP-LA-PR019
       *--- 20251203 IM.2567 Support HRC P/O by Sahassawat O.--End
       *       *- For CRS & GIS Secondary Coil -*
                     EVALUATE BXX008LA-PR004(1:4)
