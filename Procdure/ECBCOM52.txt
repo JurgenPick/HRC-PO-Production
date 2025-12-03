@@ -199,7 +199,7 @@ BEGIN
 
          END IF;
 /*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			          */
-		 IF (SUBSTR(bxx001.hc_sp001,1,3) = 'HAA' OR SUBSTR(bxx001.hc_sp001,1,3) = 'HAP') THEN
+		 IF SUBSTR(bxx001.pr_tr001,1,1) = 'H' THEN 
             w_la_pr004 := 'JIS G3131 SPHC - PO';
 /*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			          */
          END IF;
@@ -314,16 +314,17 @@ BEGIN
             w_la_pr001 := 'Cold Rolled Steel Coil for Galvanizing';
          ELSE
             IF SUBSTR(bxx008.pr_cl001,1,1) = 'B' THEN
-               w_la_pr001 := 'Tin Mill Black Plate in Coil';
-/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */			   
-			ELSE
-	           IF SUBSTR(bxx001.pr_tr001,1,1) = 'H' THEN
-                  w_la_pr001 := 'Hot-Rolled Steel Wide Strip Pickled and Oiled ';
-			   END IF;
-/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */			   
+               w_la_pr001 := 'Tin Mill Black Plate in Coil';			   
             END IF;
          END IF;
       END IF;
+      
+      
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */
+      IF SUBSTR(bxx001.pr_tr001,1,1) = 'H' THEN
+         w_la_pr001 := 'Hot-Rolled Steel Wide Strip Pickled and Oiled ';
+      END IF;
+/*    Modified by Sahassawat O. IM.2567 Support Secondary (HRC P/O)			 */
 
 /*    IF SUBSTR(bxx008.pr_cl001,1,1) = 'R' THEN                              */
 /*    --w_la_pr001 := 'COLD ROOLING MILL PRODUCT';     change 10/feb/1999    */
