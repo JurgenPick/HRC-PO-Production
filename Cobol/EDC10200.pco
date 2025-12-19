@@ -2576,11 +2576,21 @@
                      TO WWXBCP-TIS-QR
                      DISPLAY  WWXBCP-TIS-QR
                    ELSE
-                    MOVE  SPACE  TO WWXBCP-TIS-NAME
+      *--- 20251218 IM.2567 Support HRC P/O Sec B Sahassawat O.--Start
+                    IF (WWXBCP-LA-PR019(1:8) = "TIS 528")
+                       AND (WK-CHK-TIS-NAME = "1") THEN
+                       MOVE "TIS 1999 SAPH 440" TO WWXBCP-TIS-NAME
+                     MOVE "https://appdb.tisi.go.th/Q/i.php?d=193323436"
+                       TO WWXBCP-TIS-QR
+                       DISPLAY  WWXBCP-TIS-QR
+                    ELSE
+                       MOVE  SPACE  TO WWXBCP-TIS-NAME
       *--- 20201126 TIS-QR by Onuma T. --STA
-                    MOVE  SPACE  TO WWXBCP-TIS-QR
-                    DISPLAY  WWXBCP-TIS-QR
+                       MOVE  SPACE  TO WWXBCP-TIS-QR
+                       DISPLAY  WWXBCP-TIS-QR
       *--- 20201126 TIS-QR by Onuma T. --END
+                    END-IF
+      *--- 20251218 IM.2567 Support HRC P/O Sec B Sahassawat O.--End
                    END-IF
       *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--END.
                  END-IF
