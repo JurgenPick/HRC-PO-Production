@@ -295,7 +295,7 @@
       *01  PBPOUTSEND-DATA                 PIC X(950) VALUE SPACE.
       *-- 20201210 TIS-QR by Onuma T. end.
       *--- 20251119 P/O Coil type by Sahassawat IM.2567 --S*
-       01  PBPOUTSEND-DATA                 PIC X(1050) VALUE SPACE.
+       01  PBPOUTSEND-DATA                 PIC X(1100) VALUE SPACE.
       *--- 20251119 P/O Coil type by Sahassawat IM.2567 --E*
 
       ** 24/Jan/2002 by dang***stop
@@ -1302,17 +1302,29 @@
 
       *--- Check if coil is P/O type using EWWWCOM08  ---*
            EXEC SQL
-              SELECT SPCS_DEV03.EWWCOM08(:BXX008PR-SP003)
+              SELECT EWWCOM08(:BXX008PR-SP003)
                 INTO :WK-IS-COIL-PO
-                FROM DUAL
-           END-EXEC
+               FROM DUAL
+           END-EXEC.
 
-           IF SQLCODE NOT = ZERO
-              MOVE  "0"  TO  WK-IS-COIL-PO
-           END-IF.
+      *--- Handle SQL errors ---*
+           EVALUATE SQLCODE
+              WHEN ZERO
+                 CONTINUE
+                 MOVE  "1"  TO  WK-IS-COIL-PO
+              WHEN OTHER
+                 DISPLAY "ERROR: EWWCOM08 function call failed"
+                 DISPLAY "SQLCODE: " SQLCODE
+                 MOVE "0" TO WK-IS-COIL-PO
+           END-EVALUATE.
+
+      *    IF SQLCODE NOT = ZERO
+      *       MOVE  "1"  TO  WK-IS-COIL-PO
+      *    END-IF.
 
            DISPLAY "P/O Check Result: " WK-IS-COIL-PO
                     " for PR-SP003: " BXX008PR-SP003
+           DISPLAY "========================================".
       *--- 20251112 Check coil is P/O type by Sahassawat IM.2567 --E*
 
       *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
@@ -2525,7 +2537,7 @@
               IF BXX008GR-RE001 = "2" THEN
                    EVALUATE BXX001HC-SP001(1:3)
                       WHEN "HAA"
-                           MOVE  "TIS 528 HR 1"      TO WWXBCP-LA-PR019
+                           MOVE  "TIS 528 HR1"       TO WWXBCP-LA-PR019
                       WHEN "HAP"
                            MOVE  "TIS 1999 SAPH 440" TO WWXBCP-LA-PR019
                    END-EVALUATE
@@ -2577,10 +2589,10 @@
                      DISPLAY  WWXBCP-TIS-QR
                    ELSE
       *--- 20251218 IM.2567 Support HRC P/O Sec B Sahassawat O.--Start
-                    IF (WWXBCP-LA-PR019(1:8) = "TIS 528")
+                    IF (WWXBCP-LA-PR019(1:8) = "TIS 1999")
                        AND (WK-CHK-TIS-NAME = "1") THEN
                        MOVE "TIS 1999 SAPH 440" TO WWXBCP-TIS-NAME
-                     MOVE "https://appdb.tisi.go.th/Q/i.php?d=193323436"
+                    MOVE "https://appdb.tisi.go.th/Q/i.php?d=3356518519"
                        TO WWXBCP-TIS-QR
                        DISPLAY  WWXBCP-TIS-QR
                     ELSE
