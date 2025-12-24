@@ -1308,11 +1308,6 @@
            END-EXEC.
 
       *--- Handle SQL errors ---*
-           IF SQLCODE NOT = ZERO
-              DISPLAY "ERROR: EWWCOM08 function call failed"
-              DISPLAY "SQLCODE: " SQLCODE
-              MOVE "0" TO WK-IS-COIL-PO
-           END-IF.
       *    EVALUATE SQLCODE
       *       WHEN ZERO
       *          CONTINUE
@@ -1326,6 +1321,13 @@
       *    IF SQLCODE NOT = ZERO
       *       MOVE  "1"  TO  WK-IS-COIL-PO
       *    END-IF.
+
+      *--- Handle SQL errors ---*
+           IF SQLCODE NOT = ZERO
+              DISPLAY "ERROR: EWWCOM08 function call failed"
+              DISPLAY "SQLCODE: " SQLCODE
+              MOVE "0" TO WK-IS-COIL-PO
+           END-IF.
 
            DISPLAY "P/O Check Result: " WK-IS-COIL-PO
                     " for PR-SP003: " BXX008PR-SP003
@@ -1583,7 +1585,11 @@
       *-- 20201126 TIS-QR by Onuma T. STA.
       *--- 20251112 Update new item by Sahassawat IM.2567 --S*
       *    MOVE  55                  TO  PBPOUTDATA-CNT
-           MOVE  56                  TO  PBPOUTDATA-CNT
+           IF WK-IS-COIL-PO = '1' THEN
+              MOVE  56                  TO  PBPOUTDATA-CNT
+           ELSE
+              MOVE  55                  TO  PBPOUTDATA-CNT
+           END-IF
       *--- 20251112 Update new item by Sahassawat IM.2567 --E*
       *-- 20201126 TIS-QR by Onuma T. END.
 
@@ -1596,24 +1602,19 @@
       * product name  *
            MOVE    BXX008LA-PR001        TO  WWXBCP-LA-PR001
       *--- 20251112 determines name display by Sahassawat IM.2567 --S*
-      *    IF WK-IS-COIL-PO = '1' THEN
-           IF WK-CHK-TIS-NAME = "1" THEN
-              INITIALIZE WK-SEARCH-COUNT
-              INSPECT BXX008LA-PR001 TALLYING WK-SEARCH-COUNT
-                      FOR ALL "Hot-Rolled"
 
-              IF WK-SEARCH-COUNT > ZERO
+           INITIALIZE WK-SEARCH-COUNT
+           INSPECT BXX008LA-PR001 TALLYING WK-SEARCH-COUNT
+                   FOR ALL "Hot-Rolled"
+
+           IF WK-SEARCH-COUNT > ZERO
       * Hot-Rolled products ? Use H1,NAME2 with c36
-                MOVE "Hot-Rolled Steel Wide Strip" TO WWXBCP-PRODUCT-TIS
-                DISPLAY "TIS-NAME : Hot-Rolled Steel Wide Strip "
-              ELSE
-      * Other products ? Use H87,NAME68 with c37
-                MOVE "Cold Rolled Wide Strip"      TO WWXBCP-PRODUCT-TIS
-                DISPLAY "TIS-NAME : Cold Rolled Wide Strip "
-              END-IF
+              MOVE "Hot-Rolled Steel Wide Strip" TO WWXBCP-PRODUCT-TIS
+              DISPLAY "TIS-NAME : Hot-Rolled Steel Wide Strip "
            ELSE
-              MOVE SPACE TO WWXBCP-PRODUCT-TIS
-              DISPLAY "TIS-NAME : SPACE (Non P/O)"
+      * Other products ? Use H87,NAME68 with c37
+              MOVE "Cold Rolled Wide Strip"      TO WWXBCP-PRODUCT-TIS
+              DISPLAY "TIS-NAME : Cold Rolled Wide Strip "
            END-IF
       *--- 20251112 determines name display by Sahassawat IM.2567 --E*
       * specification *
@@ -2976,6 +2977,7 @@
       *--- 20201126 TIS-QR by Onuma T. --STA
                        WWXBCP-TIS-QR       "*"
       *--- 20201126 TIS-QR by Onuma T. --END
+
                                            DELIMITED  BY  SIZE
                  INTO  PBPOUTSEND-DATA
                END-STRING
