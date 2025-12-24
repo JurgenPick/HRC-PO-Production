@@ -1313,6 +1313,19 @@
               DISPLAY "SQLCODE: " SQLCODE
               MOVE "0" TO WK-IS-COIL-PO
            END-IF.
+      *    EVALUATE SQLCODE
+      *       WHEN ZERO
+      *          CONTINUE
+      *          MOVE  "1"  TO  WK-IS-COIL-PO
+      *       WHEN OTHER
+      *          DISPLAY "ERROR: EWWCOM08 function call failed"
+      *          DISPLAY "SQLCODE: " SQLCODE
+      *          MOVE "0" TO WK-IS-COIL-PO
+      *    END-EVALUATE.
+
+      *    IF SQLCODE NOT = ZERO
+      *       MOVE  "1"  TO  WK-IS-COIL-PO
+      *    END-IF.
 
            DISPLAY "P/O Check Result: " WK-IS-COIL-PO
                     " for PR-SP003: " BXX008PR-SP003
