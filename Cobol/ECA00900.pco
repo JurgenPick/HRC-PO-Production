@@ -1685,7 +1685,9 @@
 
       *    14/Jan/2011 by PK Memo 1179 Change Min HC Thick
       *    IF   PCW011HC-TH001  >= 2000
-           IF   PCW011HC-TH001  >= 1800
+      *    25/Dec/2025 by Sahassawat Support Thk 1.6 IM.2567
+      *    IF   PCW011HC-TH001  >= 1800
+           IF   PCW011HC-TH001  >= 1600
            AND  PCW011HC-TH001  <= 4000
            THEN  CONTINUE
            ELSE

@@ -1,0 +1,1790 @@
+      ****************************************************************
+      *    System name          : Operation management               *
+      *    Sub system name      : Process operation control          *
+      *    Block name           : Production instructions            *
+      *    Program name         : ECA00500                           *
+      *    Operating server     : Control Server                     *
+      *    Process type         : Real                               *
+      *    Specification Author : Hinokuchi                          *
+      *    Program Author       : Hamada                             *
+      *    Date-written         : 25.Jul.1997                        *
+      *    History              : 10.Jun.1999 commodity -> Steel Grad*
+      ****************************************************************
+       IDENTIFICATION        DIVISION.
+       PROGRAM-ID.           ECA00500.
+
+
+       ENVIRONMENT           DIVISION.
+       CONFIGURATION         SECTION.
+       SOURCE-COMPUTER.      IBM.
+       OBJECT-COMPUTER.      IBM.
+
+
+       DATA                  DIVISION.
+
+       WORKING-STORAGE       SECTION.
+
+      ******-------------------------------------------------------***
+      *        DUMP START POINT                                      *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "            PDUMPDUMPSTR".
+       01  PUDUMPDUMPSTR                   PIC  X(08) VALUE "DUMPSTR ".
+
+
+      ******-------------------------------------------------------***
+      *        SW  AREA                                              *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "                 SW-AREA".
+       01  XXXXXX-SW-AREA                  SYNC.
+         03      SWERR                     PIC  X(03) VALUE "OK ".
+
+
+      ******-------------------------------------------------------***
+      *        SUBSCRIPT  AREA                                       *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "          SUBSCRIPT-AREA".
+       01  XXXXXX-SUBSCRIPT-AREA           SYNC.
+         03      MCOM0                     PIC S9(04) COMP VALUE ZERO.
+         03      MCOM0-1                   PIC S9(04) COMP VALUE ZERO.
+         03      M0001                     PIC S9(04) COMP VALUE ZERO.
+
+      ******-------------------------------------------------------***
+      *        WORK  AREA                                            *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "               WORK-AREA".
+       01  WORK-AREA                       SYNC.
+         03      WWX006-PR-CL001           PIC  X(02).
+         03      WWX006-PR-SP005           PIC  X(07).
+         03      WWX006-HC-TH001           PIC  S9(01)V9(02) COMP-3.
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+         03      WWX006-HC-WI001           PIC S9(04)V9(01) COMP-3.
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+         03      WWX006-HC-SP001           PIC  X(10).
+
+         03      WWX001-PR-SP003           PIC  X(07).
+         03      WWX001-CC-TH001           PIC  S9(01)V9(03) COMP-3.
+         03      WWX001-CC-WI001           PIC  S9(04) COMP-3.
+         03      WWX001-PR-TR001           PIC  X(10).
+         03      WWC901-SC-PR003           PIC  X(10).
+         03      WWC901-SC-PR004           PIC  X(10).
+         03      WWDATE.
+           05      WWDATE-PR-DA002         PIC  X(14).
+           05      FILLER                  PIC  X(07).
+         03  WWDATE1                         SYNC.
+           05      WWDATE1-NU-OF001          PIC  X(01).
+           05      WWDATE1-PR-DA002          PIC  X(13).
+         03      WWX019-CC-NO001           PIC  X(08).
+         03      WWC901-AP-PR001           PIC  9(08) VALUE 1.
+         03      WWWWWW-HC-TH001           PIC  S9(02)V9(02) COMP-3.
+         03      WWWWWW-HC-WI001           PIC  S9(04)V9(01) COMP-3.
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+         03      WWX001-CD-TR001           PIC  X(01).
+         03      WWX001-ST-GR001           PIC  X(02).
+
+
+
+      *    * ----- << 10.Jun.1999 Commodity -->Steel Grade    >> --- *
+      *               PR-TR001='GGBZGB',ST-GR002='GB'                *
+      *    * ----- << 20.SEP.1999 Commodity -->Steel Grade    >> --- *
+      * ADD 20/SEP/1999  PR-TR001='GSCZ',ST-GR001='SC'               *
+      *                  PR-TR001='RSGZ',ST-GR001='SD'               *
+      ****************************************************************
+      *    * ----- << Don't forget to update ECA00900 >> ------ *    *
+      ****************************************************************
+       01        FILLER  PIC  X(24) VALUE "             T00001-AREA".
+       01  T00001-AREA                   SYNC.
+         03      FILLER                  PIC  X(06)  VALUE "RAAZAA".
+         03      FILLER                  PIC  X(06)  VALUE "RARZAB".
+         03      FILLER                  PIC  X(06)  VALUE "RASZAB".
+         03      FILLER                  PIC  X(06)  VALUE "RATZAB".
+         03      FILLER                  PIC  X(06)  VALUE "RRAZSA".
+         03      FILLER                  PIC  X(06)  VALUE "RBAZBA".
+         03      FILLER                  PIC  X(06)  VALUE "RBBZBB".
+         03      FILLER                  PIC  X(06)  VALUE "RSCZSC".
+         03      FILLER                  PIC  X(06)  VALUE "RSDZSD".
+         03      FILLER                  PIC  X(06)  VALUE "GAAZGA".
+         03      FILLER                  PIC  X(06)  VALUE "BS3ZT3".
+         03      FILLER                  PIC  X(06)  VALUE "BA4ZT4".
+         03      FILLER                  PIC  X(06)  VALUE "BA5ZT5".
+         03      FILLER                  PIC  X(06)  VALUE "GGBZGB".
+         03      FILLER                  PIC  X(06)  VALUE "RSFZSD".
+         03      FILLER                  PIC  X(06)  VALUE "GSCZSC".
+         03      FILLER                  PIC  X(06)  VALUE "RSGZSD".
+         03      FILLER                  PIC  X(06)  VALUE "******".
+         03      FILLER                  PIC  X(06)  VALUE "******".
+         03      FILLER                  PIC  X(06)  VALUE "******".
+
+       01        FILLER                  REDEFINES   T00001-AREA.
+         03      T00001-AREAR            OCCURS  20.
+           05    T00001-PR-TR001         PIC  X(04).
+           05    T00001-ST-GR002         PIC  X(02).
+
+       01  XXXXXX-WORK-AREA2.
+         03    BXX001-PR-TR000.
+           05  BXX011PR-TR001-1          PIC X(04).
+           05  BXX011PR-TR001-2          PIC X(04).
+
+      *    * ----- << 10.Jun.1999 Commodity -->Steel Grade    >> --- *
+
+      *Change structure by Omarin 07/11/15
+      *ACCEPT  PARAMATER  AREA
+       01          FILLER  PIC  X(24) VALUE "   ACCEPT PARAMATER-AREA".
+       01  ACCEPT-AREA.
+         03 ACC-USERID                     PIC  X(10)  VALUE SPACE.
+         03 ACC-PASSWORD                   PIC  X(10)  VALUE SPACE.
+         03 ACC-CLIENT                     PIC  X(08)  VALUE SPACE.
+         03 ACC-LASER                      PIC  X(08)  VALUE SPACE.
+         03 ACC-PARAM                      PIC  X(24)  VALUE SPACE.
+       COPY  "ECAM0003.CPY"  REPLACING  ==:ZZZZ:==  BY  ==MCA003==.
+
+      ******-------------------------------------------------------***
+      *        COUNT  AREA                                           *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "              COUNT-AREA".
+       01  XXXXXX-COUNT-AREA               SYNC.
+         03      WCC901-SE-NO007           PIC S9(07) COMP-3 VALUE ZERO.
+         03      WC0000-T00001             PIC S9(07) COMP-3 VALUE 20.
+
+      ******-------------------------------------------------------***
+      *        STARTUP  MSG  AREA                                    *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "       STARTUP-DATA-AREA".
+       01  STARTUP-DATA-AREA               SYNC.
+         03      STARTUP-ITEM              PIC  X(500)  VALUE SPACE.
+         03        FILLER                  PIC  X(1500) VALUE SPACE.
+
+
+      ******-------------------------------------------------------***
+      *        PARAMATER AREA                                        *
+      ******-------------------------------------------------------***
+      *WXUDUMP  PARAMATER  AREA
+       01  FILLER  PIC X(24)       VALUE "            WXUDUMP-AREA".
+       COPY  "WWWPDUMP.CPY".
+
+      *WXMSSEND  PARAMATER  AREA
+       01  FILLER  PIC X(24)       VALUE "           WXMSSEND-AREA".
+       COPY  "WWWPSSND.CPY".
+
+      *WWWRECON PARAMATER  AREA
+       01  FILLER  PIC X(24)       VALUE "           WWWRECON-AREA".
+       COPY  "WWWRECON.CPY".
+
+      *ECACOM03  PARAMATER  AREA
+       01  FILLER  PIC X(24)       VALUE "           ECACOM03-AREA".
+       COPY  "ECAP0005.CPY"  REPLACING  ==:ZZZZ:==  BY  ==PCOM03==.
+
+      *ECAM0004  AREA
+       01  FILLER  PIC X(24)       VALUE "           ECAM0004-AREA".
+       COPY  "ECAM0004.CPY"  REPLACING  ==:ZZZZ:==  BY  ==MCA004==.
+
+      * 07/11/15 Omarin comment all MQ area
+      ******-------------------------------------------------------***
+      *        MQ  FUNCTION  PARAMATER  AREA                         *
+      ******-------------------------------------------------------***
+      *WXQSINIT  PARAMATER  AREA
+      * COPY  "ECAM0003.CPY"  REPLACING  ==:ZZZZ:==  BY  ==MCA003==.
+
+      *WXQSVARS PARAMATER  AREA
+       01  FILLER  PIC X(24)       VALUE "           WXQSVARS-AREA".
+       COPY  "WXQSVARS.CPY".
+
+      *WXQSVARL PARAMATER  AREA
+       01  FILLER  PIC X(24)       VALUE "           WXQSVARL-AREA".
+       COPY  "WXQSVARL.CPY".
+
+
+      ******-------------------------------------------------------***
+      *        ERROR-INF-SAVE-AREA                                   *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "     ERROR-INF-SAVE-AREA".
+       01  ERRINF-SAVE-AREA  SYNC.
+         03      WWPROC-ERRMSG             PIC  X(325) VALUE SPACE.
+
+
+      ******-------------------------------------------------------***
+      *        WXMSSEND  BODY  WORK  AREA                            *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "          EX0001-MSGBODY".
+       01  EX0001-MSGBODY    SYNC.
+         03        FILLER                  PIC  X(08) VALUE "SQLCODE=".
+         03      EX0001-MSGBODY-1          PIC  9(06) VALUE ZERO.
+         03        FILLER                PIC  X(10) VALUE ",ERR-TEXT=".
+         03      EX0001-MSGBODY-2          PIC  X(70) VALUE SPACE.
+         03        FILLER                PIC  X(10) VALUE ",SQL-TEXT=".
+         03      EX0001-MSGBODY-3          PIC  X(70) VALUE SPACE.
+         03        FILLER           PIC  X(15) VALUE ",SQL-FILE-NAME=".
+         03      EX0001-MSGBODY-4          PIC  X(70) VALUE SPACE.
+
+      * 08/02/15 Omarin fix no data found Start
+       01  FILLER  PIC X(24)       VALUE "          WX0007-MSGBODY".
+       01  WX0007-MSGBODY                                  SYNC.
+         03        FILLER              PIC X(12) VALUE "RETURN-CODE=".
+         03      WX0007-MSGBODY-1          PIC X(01) VALUE SPACE.
+         03        FILLER                  PIC X(09) VALUE ",SQLCODE=".
+         03      WX0007-MSGBODY-2          PIC S9(07) VALUE ZERO.
+      * 08/02/15 Omarin fix no data found Stop
+
+       01          FILLER  PIC X(24) VALUE "          EX0003-MSGBODY".
+       01  EX0003-MSGBODY    SYNC.
+         03        FILLER              PIC  X(12) VALUE "RETURN-CODE=".
+         03      EX0003-MSGBODY-1          PIC  X(06) VALUE SPACE.
+
+
+       01  FILLER  PIC X(24)       VALUE "          EX0144-MSGBODY".
+       01  EX0144-MSGBODY                                  SYNC.
+         03        FILLER              PIC X(12) VALUE "RETURN-CODE=".
+         03      EX0144-MSGBODY-1          PIC X(01) VALUE SPACE.
+         03        FILLER                  PIC X(09) VALUE ",SQLCODE=".
+         03      EX0144-MSGBODY-2          PIC S9(07) VALUE ZERO.
+
+
+       01          FILLER  PIC  X(24) VALUE "          EXWXQS-MSGBODY".
+       01  EXWXQS-MSGBODY    SYNC.
+         03        FILLER                  PIC  X(07) VALUE "WXQSCC=".
+         03      EXWXQS-MSGBODY-1          PIC  X(01) VALUE SPACE.
+         03        FILLER                  PIC  X(08) VALUE ",WXQSRC=".
+         03      EXWXQS-MSGBODY-2          PIC  X(01) VALUE SPACE.
+         03        FILLER                 PIC  X(09) VALUE ",WXQSMSG=".
+         03      EXWXQS-MSGBODY-3          PIC  X(80) VALUE SPACE.
+
+
+      ******-------------------------------------------------------***
+      *        ORACLE  AREA                                          *
+      ******-------------------------------------------------------***
+           EXEC  SQL  BEGIN  DECLARE  SECTION    END-EXEC.
+
+       01  USER-PWD.
+      *----------------------------------------------------------------*
+      * Project Name : SPCS Revamp
+      * Reason : Oracle Connect : Argument -> Environment Variable
+      * Updated Date : 2016/02/26
+      * Reviser : S.Kan NSSOL nanken
+      *----------------------------------------------------------------*
+      *  03      USERID                  PIC  X(10) VALUE "SPCS      ".
+      *  03      PASSWORD                PIC  X(10) VALUE "SPCS      ".
+      *  03      DB-STRING               PIC  X(10) VALUE "SPCS_CS   ".
+         03      USERID                  PIC X(10) VALUE SPACES.
+         03      PASSWORD                PIC X(10) VALUE SPACES.
+         03      DB-STRING               PIC X(10) VALUE SPACES.
+
+       01  BCOM03-AREA                   SYNC.
+         03      BCOM03-MA-CO002           PIC  X(10).
+
+       01  TBLXX006-AREA                   SYNC.
+         03      BXX006-HC-NO001           PIC  X(10).
+         03      BXX006-PR-CL001           PIC  X(02).
+         03      BXX006-PR-SP005           PIC  X(07).
+      *  Modify by Ranya : YARD digit project 16/jan/2008
+      *  03      BXX006-YA-CO001           PIC  X(01).
+         03      BXX006-YA-CO001           PIC  X(02).
+         03      BXX006-YA-RO001           PIC  X(02).
+         03      BXX006-YA-CO002           PIC  X(02).
+         03      BXX006-NU-YA001           PIC  X(01).
+         03      BXX006-HC-TH001           PIC  S9(01)V9(02) COMP-3.
+         03      BXX006-HC-WI001           PIC  S9(04)V9(01) COMP-3.
+         03      BXX006-PR-WE001           PIC  S9(02)V9(03) COMP-3.
+         03      BXX006-RE-OU001           PIC  S9(04) COMP-3.
+         03      BXX006-AD-MA001           PIC  X(01).
+         03      BXX006-AC-IN001           PIC  S9(03) COMP-3.
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+         03      BXX006-HC-SP001           PIC  X(10).
+
+       01  TBLXX001-AREA                   SYNC.
+         03      BXX001-PR-SP003           PIC  X(07).
+         03      BXX001-CC-TH001           PIC  S9(01)V9(03) COMP-3.
+         03      BXX001-CC-WI001           PIC  S9(04) COMP-3.
+         03      BXX001-CO-RO001           PIC  X(03).
+         03      BXX001-SU-FI002           PIC  X(02).
+         03      BXX001-CD-TR001           PIC  X(01).
+         03      BXX001-IN-ST001           PIC  S9 COMP-3.
+         03      BXX001-IN-ST002           PIC  S9 COMP-3.
+         03      BXX001-PR-TR001           PIC  X(10).
+      * ADD ITEM (FI-PR003) 15/DEV/1999 BY YAMADA
+         03      BXX001-FI-PR003           PIC  X(01).
+
+       01  TBLXX016-AREA                   SYNC.
+         03      BXX016-PR-CO001           PIC  X(02).
+         03      BXX016-RE-PR003           PIC  S9(04) COMP-3.
+         03      BXX016-PR-JO003           PIC  X(03).
+         03      BXX016-PR-JO001           PIC  X(02).
+
+       01  TBLXX019-AREA                   SYNC.
+         03      BXX019-CH-MA001           PIC  X(10).
+
+      *   Memo 463 Revised on 10/AUG/2002 by Ranya Start
+      * 01  PCOM01PR-CL001                  PIC X(02).
+       01  PCOM01HC-WI001                  PIC S9(04)V9(01) COMP-3.
+       01  PCOM01CD-TR001                  PIC  X(01).
+       01  PCOM01ST-GR001                  PIC  X(02).
+       01  PCOM01HC-WI001-S                PIC S9(04)V9(01) COMP-3.
+       01  PCOM01CD-TR001-S                PIC  X(01).
+       01  PCOM01ST-GR001-S                PIC  X(02).
+       01  PCOM01BR-RE001                  PIC  X(01).
+      *   Memo 596 Revised on 11/Mar/2004 by Ranya START
+       01  PCOM01HC-SP001                  PIC  X(10).
+       01  PCOM01HC-SP001-S                PIC  X(10).
+      *   Memo 596 Revised on 11/Mar/2004 by Ranya END
+      *   Memo 463 Revised on 10/AUG/2002 by Ranya End
+       01  PCOM01HC-TH001                  PIC S9(01)V9(02) COMP-3.
+       01  PCOM01CC-TH001                  PIC S9(01)V9(03) COMP-3.
+       01  PCOM01CC-WI001                  PIC S9(04)       COMP-3.
+      * 01  PCOM01PR-TR001                  PIC X(10).
+       01  PCOM01HC-TH001-S                PIC S9(01)V9(02) COMP-3.
+       01  PCOM01CC-TH001-S                PIC S9(01)V9(03) COMP-3.
+       01  PCOM01CC-WI001-S                PIC S9(04)       COMP-3.
+      * 01  PCOM01PR-TR001-S                PIC X(10).
+      * 01  PCOM01TR-CL003                  PIC X(01).
+      * 01  PCOM01TR-CL003-S                PIC X(01).
+      * 01  PCOM01LO-RE001-1                PIC X(01).
+      * 01  PCOM01LO-RE001-2                PIC X(01).
+      * 01  PCOM01LO-RE001-4                PIC X(01).
+       01  PCOM01RE-CO002                  PIC X(01).
+
+      *    CONSTANT TABLE  -->  SUB(ECACOM04)   12/Oct/1999  by yas *
+       01  PCOM04PR-CO001                  PIC   X(02).
+      *01  PCOM04PR-TR001                  PIC   X(04).
+      *  change by Luksapol 11/Nov/2008 Memo 977
+       01  PCOM04PR-TR001                  PIC   X(10).
+       01  PCOM04ST-GR002                  PIC   X(02).
+       01  PCOM04RE-CO002                  PIC   X(01).
+
+           EXEC  SQL  INCLUDE  TBLEC901.CPY      END-EXEC.
+
+       01  PCOM92WWWCOM92                             SYNC.
+         03      PCOM92CL-LO001            PIC X(08).
+         03      PCOM92LA-PR001            PIC X(08).
+         03      PCOM92SE-PR001            PIC X(08).
+         03      PCOM92RE-CO002            PIC X(01).
+
+      *    EXEC  SQL  INCLUDE  WWWCOM92.CPY      END-EXEC.
+
+           EXEC  SQL  END  DECLARE  SECTION      END-EXEC.
+
+           EXEC  SQL  INCLUDE  SQLCA             END-EXEC.
+
+           EXEC  SQL  INCLUDE  ORACA             END-EXEC.
+
+           EXEC  ORACLE  OPTION(ORACA=YES)       END-EXEC.
+
+
+      ******-------------------------------------------------------***
+      *        DUMP  END  POINT                                      *
+      ******-------------------------------------------------------***
+       01          FILLER  PIC  X(24) VALUE "            PDUMPDUMPEND".
+       01  PUDUMPDUMPEND                   PIC  X(08) VALUE "DUMPEND ".
+
+
+       LOCAL-STORAGE         SECTION.
+       01  INST-FLAGS                      PIC  X(01) VALUE SPACE.
+       01  INST-ADDRESS                    PROCEDURE-POINTER.
+       01  STATUS-CODE                     PIC  9(04) COMP  VALUE ZERO.
+
+
+       LINKAGE               SECTION.
+       01  OS-PARM                         SYNC.
+         03      PARM-LEN                  PIC  9(04) COMP.
+         03      CMD-LINE.
+           05    PARMPTR-TABLE             PIC  X(01)
+                                           OCCURS  1  TO  100
+                                           DEPENDING  ON  PARM-LEN.
+       01  ERR-MSG                         PIC  X(325) SYNC.
+
+      /
+       PROCEDURE             DIVISION  USING  OS-PARM.
+
+
+       A0-MAIN-PROCESS       SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     A0     MAIN  PROCESS                                *
+      *    *                                                         *
+      *    ***********************************************************
+
+       A0-100.
+
+           DISPLAY "A0 START".
+
+           PERFORM  B0-PRE-PROCESS.
+
+           PERFORM  C0-PROCESS.
+
+           PERFORM  Z0-AFTER-PROCESS.
+
+       A0-900.
+      *    * ----- <<      RTS  ERROR  PROC  END              >> --- *
+           MOVE  1                     TO  INST-FLAGS
+           SET   INST-ADDRESS          TO  ENTRY  "ERROR-PROC-ECA00500"
+           CALL  "CBL_ERROR_PROC"      USING  INST-FLAGS
+                                              INST-ADDRESS
+                                              RETURNING  STATUS-CODE
+           MOVE  ZERO                  TO  RETURN-CODE
+           CONTINUE.
+           GOBACK.
+           EXIT.
+
+      /
+       B0-PRE-PROCESS        SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     B0     PRE  PROCESS                                 *
+      *    *                                                         *
+      *    ***********************************************************
+
+       B0-100.
+
+           DISPLAY "B0 START".
+
+      *    * ----- <<      RTS  ERROR  PROC  START           >> --- *
+           MOVE  ZERO                  TO  INST-FLAGS
+           SET   INST-ADDRESS          TO  ENTRY  "ERROR-PROC-ECA00500"
+           CALL  "CBL_ERROR_PROC"      USING  INST-FLAGS
+                                              INST-ADDRESS
+                                              RETURNING  STATUS-CODE
+           MOVE  1                     TO  ORASTXTF
+
+      * Change Structure by Omarin 07/11/15 Start
+           ACCEPT  ACCEPT-AREA FROM COMMAND-LINE
+
+           DISPLAY "DATA  GET  ACCEPT-AREA=",ACCEPT-AREA.
+
+           DISPLAY "ACC-USERID   =",ACC-USERID.
+           DISPLAY "ACC-PASSWORD =",ACC-PASSWORD.
+           DISPLAY "ACC-CLIENT   =",ACC-CLIENT.
+           DISPLAY "ACC-LASER    =",ACC-LASER.
+           DISPLAY "ACC-PARAM    =",ACC-PARAM.
+
+           MOVE  ACC-PARAM               TO  MCA003ECAM0003
+
+      *----------------------------------------------------------------*
+      * Project Name : SPCS Revamp
+      * Reason : Oracle Connect : Argument -> Environment Variable
+      * Updated Date : 2016/02/26
+      * Reviser : S.Kan NSSOL nanken
+      *----------------------------------------------------------------*
+           DISPLAY "UID_PARM" UPON ENVIRONMENT-NAME.
+           ACCEPT USERID FROM ENVIRONMENT-VALUE.
+           DISPLAY "PWD_PARM" UPON ENVIRONMENT-NAME.
+           ACCEPT PASSWORD FROM ENVIRONMENT-VALUE.
+           DISPLAY "DBS_PARM" UPON ENVIRONMENT-NAME.
+           ACCEPT DB-STRING FROM ENVIRONMENT-VALUE.
+           IF  NOT ( ACC-USERID  =  SPACE )
+               MOVE  ACC-USERID        TO  USERID
+               MOVE  ACC-PASSWORD      TO  PASSWORD
+           END-IF
+      * Change Structure by Omarin 07/10/15 End
+
+           INITIALIZE  PCOM04ST-GR002
+                       PCOM04RE-CO002
+                       PCOM01BR-RE001
+                       PCOM01RE-CO002
+                       PCOM92WWWCOM92.
+
+      *    * ----- <<      RDB  CONNECT                       >> --- *
+           EXEC  SQL
+               CONNECT  :USERID  IDENTIFIED  BY  :PASSWORD
+                                                USING  :DB-STRING
+           END-EXEC
+
+           DISPLAY "RDB  CONNECT END SQLCODE=",SQLCODE.
+
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN   OTHER
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               PERFORM  Y0-ABEND-PROCESS
+           END-EVALUATE
+
+      * Change Structure by Omarin 07/11/14 Start
+      *    * ----- <<      MQ  DATA  INIT                     >> --- *
+      *     MOVE  "A"                   TO  WXQSMDSA
+      *     PERFORM  WXQSINIT
+
+      *     DISPLAY "MQ  DATA  INIT  WXQSCC=",WXQSCC.
+
+      *     IF  NOT (WXQSCC             =  WXQS-INF-NORMAL)
+      *         MOVE  "EX000100"        TO  PSSENDMSGID
+      *         PERFORM  V0-MSG-DIVIDE
+      *         PERFORM  Y0-ABEND-PROCESS
+      *     END-IF
+
+      *    * ----- <<      RDB  CONNECT                       >> --- *
+      *     MOVE  "1"                    TO  PRECONUSER-CHANGE
+      *     MOVE  USERID                 TO  PRECONUSER-ID
+      *     MOVE  PASSWORD               TO  PRECONPASSWORD
+      *     MOVE  DB-STRING              TO  PRECONDB-STRING
+      *     MOVE  WXQSTRMS               TO  PRECONCLIENT-NAME.
+
+      *     CALL  "WWWRECON"         USING   PRECONUSER-CHANGE
+      *                                      PRECONUSER-ID
+      *                                      PRECONPASSWORD
+      *                                      PRECONDB-STRING
+      *                                      PRECONCLIENT-NAME
+      *                                      PRECONRTN-CD
+      *                                      PRECONSQLCODE.
+
+      *     DISPLAY "RDB  CONNECT END PRECONRTN-CD=",PRECONRTN-CD.
+      *     DISPLAY "RDB  CONNECT END PRECONSQLCODE=",PRECONSQLCODE.
+
+      *     EVALUATE  PRECONRTN-CD
+      *         WHEN  ZERO
+      *               CONTINUE
+      *         WHEN  OTHER
+      *               MOVE  "EX000144"         TO  PSSENDMSGID
+      *               PERFORM  V0-MSG-DIVIDE
+      *     END-EVALUATE.
+
+      *    * ----- <<      MQ  DATA  GET                      >> --- *
+      *     MOVE  WXQSDIN               TO  MCA003ECAM0003
+
+      *     DISPLAY "MQ  DATA  GET  MCA003ECAM0003=",MCA003ECAM0003.
+      * Change Structure by Omarin 07/11/14 End
+
+           CONTINUE.
+       B0-900.
+           EXIT.
+
+      /
+       C0-PROCESS        SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     CO     PROCESS                                      *
+      *    *                                                         *
+      *    ***********************************************************
+
+       C0-100.
+
+           DISPLAY "C0 START".
+           DISPLAY "MCA003RE-TY001" MCA003RE-TY001.
+
+      *    * ----- <<         ECACOM03             >> --- *
+           MOVE  MCA003PR-CO001        TO  PCOM03PR-CO001
+           MOVE  MCA003MA-CO002-F      TO  PCOM03MA-CO002-R
+           MOVE  200                   TO  PCOM03NU-EN001
+
+           DISPLAY "ECACOM03  CALL  PCOM03ECAP0005="PCOM03ECAP0005.
+
+           CALL  "ECACOM03"            USING  PCOM03ECAP0005
+
+           DISPLAY "ECACOM03  END  PCOM03RE-CO002="PCOM03RE-CO002.
+
+           IF  NOT  ( PCOM03RE-CO002  =  "0" )
+               MOVE  "ERR"             TO  SWERR
+               MOVE  PCOM03RE-CO002    TO  EX0003-MSGBODY-1
+               MOVE  "0"               TO  PSSENDEXPRESS
+               MOVE  "WECA0001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               GO  TO  C0-900
+           END-IF
+
+           MOVE  ZERO                  TO  WCC901-SE-NO007
+           MOVE  FUNCTION CURRENT-DATE TO  WWDATE
+
+           MOVE  MCA003NU-OF001        TO  WWDATE1-NU-OF001
+           MOVE  WWDATE-PR-DA002(2:13) TO  WWDATE1-PR-DA002
+
+           MOVE  WWDATE1               TO  WWDATE-PR-DA002
+
+           PERFORM  WITH  TEST  AFTER  VARYING  MCOM0  FROM  1  BY  1
+                    UNTIL  MCA003MA-CO002-T  =  PCOM03MA-CO002(MCOM0)
+                       OR
+                           MCOM0  >  200
+                       OR
+                           SWERR  =  "ERR"
+
+             DISPLAY "MCA003MA-CO002-T = "MCA003MA-CO002-T
+             DISPLAY "PCOM03MA-CO002(MCOM0) = "PCOM03MA-CO002(MCOM0)
+
+             IF  NOT ( MCA003MA-CO002-T  =  PCOM03MA-CO002(MCOM0))
+               PERFORM  C1-PROCESS
+             END-IF
+
+             DISPLAY "SWERR = "SWERR
+             IF  NOT (SWERR  =  "ERR")
+               PERFORM  C2-PROCESS
+             END-IF
+
+             IF  NOT (SWERR  =  "ERR")
+               ADD  1                  TO  WCC901-SE-NO007
+               PERFORM  C3-PROCESS
+             END-IF
+
+           END-PERFORM.
+
+           INITIALIZE                  MCA004ECAM0004
+
+      *    * ----- <<  ECAM0004 SET                           >> --- *
+           MOVE  MCA003PR-CO001        TO  MCA004PR-CO001
+           MOVE  WWDATE-PR-DA002       TO  MCA004PR-DA002
+           MOVE  1                     TO  MCA004SE-NO004
+           MOVE  MCOM0                 TO  MCA004SE-NO005
+
+           CONTINUE.
+       C0-900.
+           EXIT.
+
+      /
+       C1-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C1                                                  *
+      *    *                                                         *
+      *    ***********************************************************
+
+       C1-100.
+      *   DISPLAY "C1  START".
+           COMPUTE   MCOM0-1  =  MCOM0  +  1
+           MOVE  PCOM03MA-CO002(MCOM0-1) TO  BCOM03-MA-CO002
+      *    * ----- <<      TBLXX006  SELECT                   >> --- *
+
+           DISPLAY "TBLXX006 SELECT 1".
+           EXEC  SQL
+              SELECT  NVL(PR_CL001,'  '),
+                      NVL(PR_SP005,'       '),
+                      HC_TH001,
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+                      HC_WI001,
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+                      HC_SP001
+                INTO  :BXX006-PR-CL001,
+                      :BXX006-PR-SP005,
+                      :BXX006-HC-TH001,
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+                      :BXX006-HC-WI001,
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+                      :BXX006-HC-SP001
+                FROM  TBLXX006
+               WHERE  HC_NO001  =  :BCOM03-MA-CO002
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               MOVE  BXX006-PR-CL001   TO  WWX006-PR-CL001
+               MOVE  BXX006-PR-SP005   TO  WWX006-PR-SP005
+               MOVE  BXX006-HC-TH001   TO  WWX006-HC-TH001
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+               MOVE  BXX006-HC-WI001   TO  WWX006-HC-WI001
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+               MOVE  BXX006-HC-SP001   TO  WWX006-HC-SP001
+      *   08/02/26 Omarin fix no data found Start
+             WHEN    +1403
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "Schedule was changed" TO  EX0001-MSGBODY-4
+               MOVE  "WECA0007"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               PERFORM  Y1-ABEND-NODATAFOUND
+               GO  TO  C1-900
+      *   08/02/26 Omarin fix no data found End
+             WHEN   OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               GO  TO  C1-900
+           END-EVALUATE
+
+      *    * ----- <<      TBLXX001  SELECT                   >> --- *
+
+           DISPLAY "TBLXX001 SELECT 1".
+           EXEC  SQL
+              SELECT  PR_SP003,
+                      CC_TH001,
+                      CC_WI001,
+                      PR_TR001,
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+                      CD_TR001
+                INTO  :BXX001-PR-SP003,
+                      :BXX001-CC-TH001,
+                      :BXX001-CC-WI001,
+                      :BXX001-PR-TR001,
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+                      :BXX001-CD-TR001
+                FROM  TBLXX001
+               WHERE  PR_SP003  =  :BXX006-PR-SP005
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               MOVE  BXX001-PR-SP003   TO  WWX001-PR-SP003
+               MOVE  BXX001-CC-TH001   TO  WWX001-CC-TH001
+               MOVE  BXX001-CC-WI001   TO  WWX001-CC-WI001
+               MOVE  BXX001-PR-TR001   TO  WWX001-PR-TR001
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+               MOVE  BXX001-CD-TR001   TO  WWX001-CD-TR001
+      *   08/02/26 Omarin fix no data found Start
+             WHEN    +1403
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "Schedule was changed" TO  EX0001-MSGBODY-4
+               MOVE  "WECA0007"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               PERFORM  Y1-ABEND-NODATAFOUND
+               GO  TO  C1-900
+      *   08/02/26 Omarin fix no data found End
+             WHEN   OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+           END-EVALUATE
+
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya Start
+           MOVE  MCA003PR-CO001       TO  PCOM04PR-CO001
+           MOVE  BXX001-PR-TR001      TO  PCOM04PR-TR001
+
+           EXEC  SQL  EXECUTE
+               BEGIN
+                  ECACOM04(:PCOM04PR-CO001,
+                           :PCOM04PR-TR001,
+                           :PCOM04ST-GR002,
+                           :PCOM04RE-CO002);
+               END;
+           END-EXEC
+           IF  NOT (PCOM04RE-CO002  =  "0")
+             MOVE  "ERR"               TO  SWERR
+             MOVE  PCOM04RE-CO002      TO  EX0003-MSGBODY-1
+             MOVE  "0"                 TO  PSSENDEXPRESS
+             MOVE  "WECA0002"          TO  PSSENDMSGID
+             PERFORM  V0-MSG-DIVIDE
+             GO  TO  C1-900
+           END-IF
+
+           MOVE  PCOM04ST-GR002        TO  WWX001-ST-GR001.
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya End
+
+           CONTINUE.
+       C1-900.
+           EXIT.
+
+      /
+       C2-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C2                                                  *
+      *    *                                                         *
+      *    ***********************************************************
+
+       C2-100.
+           DISPLAY "C2  START".
+
+           MOVE  PCOM03MA-CO002(MCOM0) TO  BCOM03-MA-CO002
+
+      *    * ----- <<      TBLXX006  SELECT                   >> --- *
+           DISPLAY "TBLXX006 SELECT 2".
+           EXEC  SQL
+              SELECT  HC_NO001,
+                      NVL(PR_CL001,'  '),
+                      NVL(PR_SP005,'       '),
+      *  Modify by Ranya : YARD digit project 16/jan/2008
+      *                NVL(YA_CO001,' '),
+                      NVL(YA_CO001,'  '),
+                      NVL(YA_RO001,'  '),
+                      NVL(YA_CO002,'  '),
+                      NVL(NU_YA001,' '),
+                      HC_TH001,
+                      HC_WI001,
+                      PR_WE001,
+                      RE_OU001,
+                      NVL(AD_MA001,' '),
+                      AC_IN001,
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+                      HC_SP001
+                INTO  :BXX006-HC-NO001,
+                      :BXX006-PR-CL001,
+                      :BXX006-PR-SP005,
+                      :BXX006-YA-CO001,
+                      :BXX006-YA-RO001,
+                      :BXX006-YA-CO002,
+                      :BXX006-NU-YA001,
+                      :BXX006-HC-TH001,
+                      :BXX006-HC-WI001,
+                      :BXX006-PR-WE001,
+                      :BXX006-RE-OU001,
+                      :BXX006-AD-MA001,
+                      :BXX006-AC-IN001,
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+                      :BXX006-HC-SP001
+                FROM  TBLXX006
+               WHERE  HC_NO001  =  :BCOM03-MA-CO002
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               DISPLAY"AF2 SEL XX006 BCOM03-MA-CO002="BCOM03-MA-CO002
+               DISPLAY"***AF2***"
+               DISPLAY"AF HCSP2 BXX006-HC-SP001="BXX006-HC-SP001
+               CONTINUE
+      *   08/02/26 Omarin fix no data found Start
+             WHEN    +1403
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "Schedule was changed" TO  EX0001-MSGBODY-4
+               MOVE  "WECA0007"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               PERFORM  Y1-ABEND-NODATAFOUND
+               GO  TO  C1-900
+      *   08/02/26 Omarin fix no data found End
+             WHEN   OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               GO  TO  C2-900
+           END-EVALUATE
+
+      *    * ----- <<      TBLXX001  SELECT                   >> --- *
+
+      * ADD ITEM (FI-PR003) 15/DEV/1999 BY YAMADA
+
+           DISPLAY "TBLXX001 SELECT 2".
+           EXEC  SQL
+              SELECT  PR_SP003,
+                      CC_TH001,
+                      CC_WI001,
+                      CO_RO001,
+                      SU_FI002,
+                      CD_TR001,
+                      FI_PR003,
+                      IN_ST001,
+                      IN_ST002,
+                      PR_TR001
+                INTO  :BXX001-PR-SP003,
+                      :BXX001-CC-TH001,
+                      :BXX001-CC-WI001,
+                      :BXX001-CO-RO001,
+                      :BXX001-SU-FI002,
+                      :BXX001-CD-TR001,
+                      :BXX001-FI-PR003,
+                      :BXX001-IN-ST001,
+                      :BXX001-IN-ST002,
+                      :BXX001-PR-TR001
+                FROM  TBLXX001
+               WHERE  PR_SP003  =  :BXX006-PR-SP005
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+      *   08/02/26 Omarin fix no data found Start
+             WHEN    +1403
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "Schedule was changed" TO  EX0001-MSGBODY-4
+               MOVE  "WECA0007"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               PERFORM  Y1-ABEND-NODATAFOUND
+               GO  TO  C1-900
+      *   08/02/26 Omarin fix no data found End
+             WHEN   OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               GO  TO  C2-900
+           END-EVALUATE
+
+      *    * ----- <<      TBLXX016  SELECT                   >> --- *
+
+           EXEC  SQL
+              SELECT  PR_CO001
+                INTO  :BXX016-PR-CO001
+                FROM  TBLXX016
+               WHERE  SA_PR004  =  2
+                 AND
+                      MA_CO002  =  :BCOM03-MA-CO002
+                 AND
+                      PR_RO010  =  1
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               MOVE  BXX016-PR-CO001   TO  WWC901-SC-PR003
+             WHEN   +1403
+               MOVE  SPACE             TO  WWC901-SC-PR003
+             WHEN   OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               GO  TO  C2-900
+           END-EVALUATE
+
+      *    * ----- <<      TBLXX016  SELECT                   >> --- *
+
+           EXEC  SQL
+              SELECT  PR_CO001
+                INTO  :BXX016-PR-CO001
+                FROM  TBLXX016
+               WHERE  SA_PR004  =  3
+                 AND
+                      MA_CO002  =  :BCOM03-MA-CO002
+                 AND
+                      PR_RO010  =  1
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               MOVE  BXX016-PR-CO001   TO  WWC901-SC-PR004
+             WHEN   +1403
+               MOVE  SPACE             TO  WWC901-SC-PR004
+             WHEN   OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               GO  TO  C2-900
+           END-EVALUATE
+
+      *    * ----- <<      TBLXX019  SELECT                   >> --- *
+
+           EXEC  SQL
+              SELECT  CH_MA001
+                INTO  :BXX019-CH-MA001
+                FROM  TBLXX019
+               WHERE  PA_MA001  =  :BCOM03-MA-CO002
+                 AND
+                      PA_PR001  =  1
+                 AND
+                      AP_PR001  =  'ECB02100'
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               MOVE  BXX019-CH-MA001   TO  WWX019-CC-NO001
+             WHEN   +1403
+               MOVE  SPACE             TO  WWX019-CC-NO001
+             WHEN   OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               GO  TO  C2-900
+           END-EVALUATE
+
+      *    * ----- <<      TBLXX016  SELECT                   >> --- *
+
+           DISPLAY "TBLXX016 SELECT"
+           EXEC  SQL
+              SELECT  RE_PR003,
+                      PR_JO003,
+                      PR_JO001
+                INTO  :BXX016-RE-PR003,
+                      :BXX016-PR-JO003,
+                      :BXX016-PR-JO001
+                FROM  TBLXX016
+               WHERE  SA_PR004  =  1
+                 AND
+                      MA_CO002  =  :BCOM03-MA-CO002
+                 AND
+                      PR_RO010  =  1
+           END-EXEC
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+      *   08/02/26 Omarin fix no data found Start
+             WHEN    +1403
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "Schedule was changed" TO  EX0001-MSGBODY-4
+               MOVE  "WECA0007"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+               PERFORM  Y1-ABEND-NODATAFOUND
+               GO  TO  C1-900
+      *   08/02/26 Omarin fix no data found End
+             WHEN   OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+           END-EVALUATE
+
+           CONTINUE.
+       C2-900.
+           EXIT.
+
+      /
+       C3-PROCESS            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     C3                                                  *
+      *    *                                                         *
+      *    ***********************************************************
+
+       C3-100.
+          DISPLAY "C3  START".
+
+
+           INITIALIZE  BEC901TBLEC901.
+
+
+           MOVE  BXX001-PR-TR001      TO  BXX001-PR-TR000
+
+      *    CONSTANT TABLE  -->  SUB(ECACOM04)   12/Oct/1999  by yas  *
+           MOVE  MCA003PR-CO001       TO  PCOM04PR-CO001
+      *    MOVE  BXX011PR-TR001-1     TO  PCOM04PR-TR001
+           MOVE  BXX001-PR-TR001      TO  PCOM04PR-TR001
+
+           EXEC  SQL  EXECUTE
+               BEGIN
+                  ECACOM04(:PCOM04PR-CO001,
+                           :PCOM04PR-TR001,
+                           :PCOM04ST-GR002,
+                           :PCOM04RE-CO002);
+               END;
+           END-EXEC
+
+           IF  NOT (PCOM04RE-CO002  =  "0")
+             MOVE  "ERR"               TO  SWERR
+             MOVE  PCOM04RE-CO002      TO  EX0003-MSGBODY-1
+             MOVE  "0"                 TO  PSSENDEXPRESS
+             MOVE  "WECA0002"          TO  PSSENDMSGID
+             PERFORM  V0-MSG-DIVIDE
+             GO  TO  C3-900
+           END-IF
+
+           MOVE  PCOM04ST-GR002        TO  BEC901ST-GR002
+
+      *    10/JUN/1999 SET STEEL GRADE                                *
+      *    MOVE  BXX001-PR-TR001       TO  BXX001-PR-TR000
+      *
+      *    PERFORM  VARYING  M0001 FROM  1  BY  1
+      *             UNTIL    M0001 >   WC0000-T00001
+      *
+      *      IF     T00001-PR-TR001(M0001)
+      *                            =   BXX011PR-TR001-1
+      *        MOVE T00001-ST-GR002(M0001)
+      *                            TO  BEC901ST-GR002
+      *      END-IF
+      *    END-PERFORM
+      *
+      *    10/JUN/1999 SET STEEL GRADE                                *
+
+      *    * ----- <<   BEC901TBLEC901     SET                >> --- *
+
+           MOVE  MCA003PR-CO001        TO  BEC901PR-CO001.
+           MOVE  WCC901-SE-NO007       TO  BEC901SE-NO007.
+           MOVE  WWDATE-PR-DA002       TO  BEC901PR-DA002.
+           MOVE  BXX006-RE-OU001       TO  BEC901RE-OU001.
+           MOVE  ZERO                  TO  BEC901MM-CO016.
+           MOVE  ZERO                  TO  BEC901AC-IN001.
+           MOVE  SPACE                 TO  BEC901SL-US001.
+           MOVE  SPACE                 TO  BEC901TE-LE001.
+           MOVE  BXX006-HC-NO001       TO  BEC901HC-NO001.
+           MOVE  BXX001-IN-ST001       TO  BEC901IN-ST001.
+           MOVE  BXX001-IN-ST002       TO  BEC901IN-ST002.
+           MOVE  BXX006-PR-WE001       TO  BEC901PR-WE001.
+           MOVE  BXX001-CC-TH001       TO  BEC901PR-TH001.
+           MOVE  ZERO                  TO  BEC901PR-LE001.
+           MOVE  BXX001-CC-WI001       TO  BEC901PR-WI001.
+           MOVE  BXX016-PR-JO003       TO  BEC901PR-JO003.
+           MOVE  BXX016-PR-JO001       TO  BEC901PR-JO001.
+           MOVE  PCOM03JO-IN002(MCOM0) TO  BEC901JO-IN002.
+
+      * NO NEED CONDITION & ADD FI-PR003 15/DEV/1999 BY YAMADA
+
+      *    IF  BXX001-CD-TR001  =  "S"
+      *      MOVE  "S"                 TO  BEC901CD-TR001
+      *    ELSE
+      *      MOVE  SPACE               TO  BEC901CD-TR001
+      *    END-IF.
+      *    MOVE  SPACE                 TO  BEC901CD-TR003.
+
+           MOVE  BXX001-CD-TR001       TO  BEC901CD-TR001.
+           MOVE  BXX001-FI-PR003       TO  BEC901CD-TR003.
+
+           MOVE  SPACE                 TO  BEC901PR-PR002.
+           MOVE  BXX001-SU-FI002       TO  BEC901SU-FI002.
+           MOVE  SPACE                 TO  BEC901AN-CY001.
+           MOVE  BXX006-PR-CL001       TO  BEC901PR-CL001.
+           MOVE  SPACE                 TO  BEC901PR-SC002.
+           MOVE  BXX006-YA-CO002       TO  BEC901YA-CO002.
+           MOVE  BXX006-YA-CO001       TO  BEC901YA-CO001.
+           MOVE  BXX006-YA-RO001       TO  BEC901YA-RO001.
+           MOVE  BXX006-NU-YA001       TO  BEC901NU-YA001.
+           MOVE  BXX006-AD-MA001       TO  BEC901AD-MA001.
+           MOVE  BXX016-RE-PR003       TO  BEC901RE-PR003.
+           MOVE  SPACE                 TO  BEC901OI-TY001.
+           MOVE  BXX006-HC-TH001       TO  BEC901HC-TH001.
+           MOVE  BXX006-HC-WI001       TO  BEC901HC-WI001.
+           MOVE  SPACE                 TO  BEC901WE-RE001.
+           MOVE  WWX019-CC-NO001       TO  BEC901CC-NO001.
+           MOVE  BXX001-CO-RO001       TO  BEC901CO-RO001.
+           MOVE  WWC901-SC-PR003       TO  BEC901SC-PR003.
+           MOVE  WWC901-SC-PR004       TO  BEC901SC-PR004.
+
+      *    ***********  98/03/16 REPAIR KATO  ************************
+      *-- Change Minimum HC Thickness 2.0 -> 1.8 By PK Memo 1179
+      *    IF   BXX006-HC-TH001  >=  2
+           IF   BXX006-HC-TH001  >=  1.8
+           AND  BXX006-HC-TH001  <=  4
+           THEN  CONTINUE
+           ELSE
+              MOVE   "E"        TO  BEC901ER-ST001
+           END-IF
+
+      *-- Change Thickness 0.16 -> 0.12 By Chumpol 16/Aug/1999
+      *-- Change Thickness 1.65 -> 2.10 By Chumpol 16/Aug/1999
+      *-- Change Thickness 2.10 -> 2.30 By Chumpol 13/Sep/2000
+           IF   BXX001-CC-TH001  >=  0.12
+      *--  AND  BXX001-CC-TH001  <=  2.10    --*
+      *    AND  BXX001-CC-TH001  <=  2.30
+      *    CDCM THICKNESS SIZE 2.5 TEST BY PK
+      * Modified by Songpol (21/Nov/2025) [IM.2567] -------------- S# *
+      *    AND  BXX001-CC-TH001  <=  2.50
+           AND  BXX001-CC-TH001  <=  3.00
+      * Modified by Songpol (21/Nov/2025) [IM.2567] -------------- E# *
+           THEN  CONTINUE
+           ELSE
+              MOVE   "E"        TO  BEC901ER-ST001
+           END-IF
+
+      *    **  99/OCT/26 UPDATE by Chumpol  (WIDH  700-->600)     ****
+           IF   BXX006-HC-WI001  >=  600
+      *    **  99/OCT/26 UPDATE by Chumpol  (WIDH  1350-->1400)   ****
+           AND  BXX006-HC-WI001  <=  1400
+           THEN  CONTINUE
+           ELSE
+              MOVE   "E"        TO  BEC901ER-ST001
+           END-IF
+
+
+      *    **  99/OCT/26 UPDATE by Chumpol  (WIDH  700-->600)     ****
+           IF   BXX001-CC-WI001  >=  600
+      *    **  99/04/08 UPDATE by yasu  (WIDH  1300-->1329)       ****
+      *    **  99/OCT/26 UPDATE by Chumpol  (WIDH  1329-->1400)   ****
+           AND  BXX001-CC-WI001  <=  1400
+      *    **  99/04/08 UPDATE by yasu  (WIDH  1300-->1329)       ****
+           THEN  CONTINUE
+           ELSE
+              MOVE   "E"        TO  BEC901ER-ST001
+           END-IF
+
+           IF  BXX001-CD-TR001 = "S"
+              COMPUTE  WWWWWW-HC-TH001  =  BXX006-HC-TH001  *  3
+              COMPUTE  WWWWWW-HC-WI001
+                    =  BXX006-HC-WI001  -  BXX001-CC-WI001
+      *        IF   WWWWWW-HC-WI001  >=  WWWWWW-HC-TH001
+      *----   19 JUL 1999 Change HC width check from 50 to 30 mm ---*
+      *    ** 09/OCT/2000 By Chumpol Trimming width 10 -> 8     **  *
+              IF   WWWWWW-HC-WI001  >=  8
+              AND  WWWWWW-HC-WI001  <=  30
+              THEN  CONTINUE
+              ELSE
+                 MOVE   "E"        TO  BEC901ER-ST001
+              END-IF
+           END-IF
+      *    **  06/06/09 Expanded Entry weight for BlueScope (PK)    ****
+      *    IF   BXX006-PR-WE001  <=  20
+           IF   BXX006-PR-WE001  <=  21.5
+           THEN  CONTINUE
+           ELSE
+              MOVE   "E"        TO  BEC901ER-ST001
+           END-IF
+
+      *    * -- << Spec Change 2000 -> 2100  10/Dec/99 by yas >> -- *
+           IF   BXX006-RE-OU001  >=  1200
+           AND  BXX006-RE-OU001  <=  2100
+      *     AND  BXX006-RE-OU001  <=  2000
+           THEN  CONTINUE
+           ELSE
+              MOVE   "E"        TO  BEC901ER-ST001
+           END-IF
+
+      * Modified by Songpol (17-Aug-2015) for Memo1594:HC I/D ---- S# *
+      *    IF   BXX006-AC-IN001  =  762
+           IF BXX006-AC-IN001 >= 723.9 AND BXX006-AC-IN001 <= 762.0
+      * Modified by Songpol (17-Aug-2015) for Memo1594:HC I/D ---- E# *
+           THEN  CONTINUE
+           ELSE
+              MOVE   "E"        TO  BEC901ER-ST001
+           END-IF
+
+      *    ***********  98/03/16 REPAIR KATO  ************************
+
+           MOVE  WWC901-AP-PR001       TO  BEC901AP-PR001.
+
+
+           COMPUTE   MCOM0-1  =  MCOM0  +  1.
+
+           IF  MCA003MA-CO002-T  =  PCOM03MA-CO002(MCOM0)
+               GO  TO  C3-500
+           END-IF.
+
+           IF  NOT ( PCOM03PR-JO003(MCOM0)  =  PCOM03PR-JO003(MCOM0-1))
+      *       MOVE  "5"                 TO  BEC901LO-RE001
+      *   Memo 463 Revised on 9/AUG/2002 by Ranya
+             MOVE  "9"                 TO  BEC901LO-RE001
+             COMPUTE  WWC901-AP-PR001  =  WWC901-AP-PR001  +  1
+           ELSE
+
+
+      *    * ----- <<   EWWCOM01 PARAMATER SET                >> --- *
+
+      *       MOVE  BXX006-PR-CL001     TO  PCOM01PR-CL001
+      *       MOVE  BXX006-HC-TH001     TO  PCOM01HC-TH001
+      *       MOVE  BXX001-CC-TH001     TO  PCOM01CC-TH001
+      *       MOVE  BXX001-CC-WI001     TO  PCOM01CC-WI001
+      *       MOVE  BXX001-PR-TR001     TO  PCOM01PR-TR001
+      *       MOVE  WWX006-HC-TH001     TO  PCOM01HC-TH001-S
+      *       MOVE  WWX001-CC-TH001     TO  PCOM01CC-TH001-S
+      *       MOVE  WWX001-CC-WI001     TO  PCOM01CC-WI001-S
+      *       MOVE  WWX001-PR-TR001     TO  PCOM01PR-TR001-S
+
+
+      *   Memo 463 Revised on 10/AUG/2002 by Ranya  Start
+      *    * ----- <<   EWWCOM07 PARAMATER SET     >> --- *
+             MOVE  BXX006-HC-TH001     TO  PCOM01HC-TH001
+             MOVE  BXX006-HC-WI001     TO  PCOM01HC-WI001
+             MOVE  BXX001-CC-TH001     TO  PCOM01CC-TH001
+             MOVE  BXX001-CC-WI001     TO  PCOM01CC-WI001
+             MOVE  BXX001-CD-TR001     TO  PCOM01CD-TR001
+             MOVE  BEC901ST-GR002      TO  PCOM01ST-GR001
+             MOVE  WWX006-HC-TH001     TO  PCOM01HC-TH001-S
+             MOVE  WWX006-HC-WI001     TO  PCOM01HC-WI001-S
+             MOVE  WWX001-CC-TH001     TO  PCOM01CC-TH001-S
+             MOVE  WWX001-CC-WI001     TO  PCOM01CC-WI001-S
+             MOVE  WWX001-CD-TR001     TO  PCOM01CD-TR001-S
+             MOVE  WWX001-ST-GR001     TO  PCOM01ST-GR001-S
+      *   Memo 463 Revised on 10/AUG/2002 by Ranya  End
+      *   Memo 596 Revised on 11/MAR/2002 by Ranya  START
+             MOVE  BXX006-HC-SP001     TO  PCOM01HC-SP001
+             MOVE  WWX006-HC-SP001     TO  PCOM01HC-SP001-S
+      *   Memo 596 Revised on 11/MAR/2002 by Ranya  End
+
+             EXEC  SQL  EXECUTE
+                 BEGIN
+      *              EWWCOM01(:PCOM01PR-CL001,
+      *                       :PCOM01HC-TH001,
+      *                       :PCOM01CC-TH001,
+      *                       :PCOM01CC-WI001,
+      *                       :PCOM01PR-TR001,
+      *                       :PCOM01HC-TH001-S,
+      *                       :PCOM01CC-TH001-S,
+      *                       :PCOM01CC-WI001-S,
+      *                       :PCOM01PR-TR001-S,
+      *                       :PCOM01TR-CL003,
+      *                       :PCOM01TR-CL003-S,
+      *                       :PCOM01LO-RE001-1,
+      *                       :PCOM01LO-RE001-2,
+      *                       :PCOM01LO-RE001-4,
+      *                       :PCOM01RE-CO002);
+      *   Memo 463 Revised on 10/AUG/2002 by Ranya  Start
+                    EWWCOM07(:PCOM01HC-TH001,
+                             :PCOM01HC-WI001,
+                             :PCOM01CC-TH001,
+                             :PCOM01CC-WI001,
+                             :PCOM01CD-TR001,
+                             :PCOM01ST-GR001,
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+                             :PCOM01HC-SP001,
+                             :PCOM01HC-TH001-S,
+                             :PCOM01HC-WI001-S,
+                             :PCOM01CC-TH001-S,
+                             :PCOM01CC-WI001-S,
+                             :PCOM01CD-TR001-S,
+                             :PCOM01ST-GR001-S,
+      *   Memo 596 Revised on 11/MAR/2004 by Ranya
+                             :PCOM01HC-SP001-S,
+                             :PCOM01BR-RE001,
+                             :PCOM01RE-CO002);
+                 END;
+             END-EXEC
+             IF  NOT (PCOM01RE-CO002  =  "0")
+               MOVE  "ERR"             TO  SWERR
+               GO  TO  C3-900
+             END-IF
+             MOVE  PCOM01BR-RE001       TO  BEC901LO-RE001
+      *       EVALUATE  PCOM01LO-RE001-4  ALSO  PCOM01LO-RE001-2
+      *                                   ALSO  PCOM01LO-RE001-1
+      *         WHEN  "1"    ALSO ANY    ALSO ANY
+      *           MOVE  "4"             TO  BEC901LO-RE001
+      *         WHEN  NOT"1" ALSO "1"    ALSO ANY
+      *           MOVE  "2"             TO  BEC901LO-RE001
+      *         WHEN  NOT"1" ALSO NOT"1" ALSO "1"
+      *           MOVE  "1"             TO
+      *       END-EVALUATE
+
+      *   Memo 463 Revised on 10/AUG/2002 by Ranya End
+           END-IF.
+
+
+       C3-500.
+
+      *    * ----- <<      TBLEC901  INSERT                   >> --- *
+
+           EXEC  SQL
+              INSERT  INTO  TBLEC901
+                     (PR_CO001,
+                      SE_NO007,
+                      PR_DA002,
+                      RE_OU001,
+                      MM_CO016,
+                      AC_IN001,
+                      SL_US001,
+                      TE_LE001,
+                      HC_NO001,
+                      RE_IN001,
+                      LO_RE001,
+                      IN_ST001,
+                      IN_ST002,
+                      PR_WE001,
+                      PR_TH001,
+                      PR_LE001,
+                      PR_WI001,
+                      PR_JO003,
+                      PR_JO001,
+                      AP_PR001,
+                      JO_IN002,
+                      CD_TR001,
+                      CD_TR003,
+                      PR_PR002,
+                      SU_FI002,
+                      AN_CY001,
+                      PR_CL001,
+                      PR_SC002,
+                      YA_CO002,
+                      YA_CO001,
+                      YA_RO001,
+                      NU_YA001,
+                      AD_MA001,
+                      SC_PR003,
+                      SC_PR004,
+                      RE_PR003,
+                      OI_TY001,
+                      HC_TH001,
+                      HC_WI001,
+                      WE_RE001,
+                      CC_NO001,
+                      CO_RO001,
+                      ER_ST001,
+                      ST_GR002)
+              VALUES (:BEC901PR-CO001,
+                      :BEC901SE-NO007,
+                      :BEC901PR-DA002,
+                      :BEC901RE-OU001,
+                      :BEC901MM-CO016,
+                      :BEC901AC-IN001,
+                      :BEC901SL-US001,
+                      :BEC901TE-LE001,
+                      :BEC901HC-NO001,
+                       SYSDATE,
+                      :BEC901LO-RE001,
+                      :BEC901IN-ST001,
+                      :BEC901IN-ST002,
+                      :BEC901PR-WE001,
+                      :BEC901PR-TH001,
+                      :BEC901PR-LE001,
+                      :BEC901PR-WI001,
+                      :BEC901PR-JO003,
+                      :BEC901PR-JO001,
+                      :BEC901AP-PR001,
+                      :BEC901JO-IN002,
+                      :BEC901CD-TR001,
+                      :BEC901CD-TR003,
+                      :BEC901PR-PR002,
+                      :BEC901SU-FI002,
+                      :BEC901AN-CY001,
+                      :BEC901PR-CL001,
+                      :BEC901PR-SC002,
+                      :BEC901YA-CO002,
+                      :BEC901YA-CO001,
+                      :BEC901YA-RO001,
+                      :BEC901NU-YA001,
+                      :BEC901AD-MA001,
+                      :BEC901SC-PR003,
+                      :BEC901SC-PR004,
+                      :BEC901RE-PR003,
+                      :BEC901OI-TY001,
+                      :BEC901HC-TH001,
+                      :BEC901HC-WI001,
+                      :BEC901WE-RE001,
+                      :BEC901CC-NO001,
+                      :BEC901CO-RO001,
+                      :BEC901ER-ST001,
+                      :BEC901ST-GR002)
+           END-EXEC.
+           EVALUATE  SQLCODE
+             WHEN  ZERO
+               CONTINUE
+             WHEN  OTHER
+               MOVE  "ERR"             TO  SWERR
+               MOVE  "EX000001"        TO  PSSENDMSGID
+               PERFORM  V0-MSG-DIVIDE
+           END-EVALUATE.
+
+           CONTINUE.
+       C3-900.
+           EXIT.
+
+      /
+       V0-MSG-DIVIDE         SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V0     MSG  DIVIDE                                  *
+      *    *                                                         *
+      *    ***********************************************************
+
+       V0-100.
+
+           DISPLAY "V0 START PSSENDMSGID=",PSSENDMSGID.
+
+           EVALUATE  PSSENDMSGID
+
+             WHEN  "EX000001"
+
+      *    * ----- <<      SQL     ERROR                      >> --- *
+
+               MOVE  "1"               TO  PSSENDEXPRESS
+               MOVE  SQLCODE           TO  EX0001-MSGBODY-1
+               MOVE  SQLERRMC          TO  EX0001-MSGBODY-2
+               MOVE  ORASTXTC          TO  EX0001-MSGBODY-3
+               MOVE  ORASFNMC          TO  EX0001-MSGBODY-4
+               MOVE  EX0001-MSGBODY    TO  PSSENDMSGBODY
+      *         PERFORM  WXQSRBK
+               PERFORM  V1-POPMSGOUT
+               PERFORM  V3-POP-PRTMSGOUT
+
+
+      * 08/02/26 Omarin fix no data found start
+             WHEN   "WECA0007"
+               MOVE  "1"                            TO  PSSENDEXPRESS
+               MOVE  PRECONRTN-CD         TO  WX0007-MSGBODY-1
+               MOVE  PRECONSQLCODE       TO  WX0007-MSGBODY-2
+               MOVE  WX0007-MSGBODY  TO  PSSENDMSGBODY
+      *         PERFORM  WXQSRBK
+               PERFORM  V1-POPMSGOUT
+      * 08/02/26 Omarin fix no data found end
+
+      *    * ----- <<      ECACOM04 SUB ERROR                 >> --- *
+             WHEN  "WECA0002"
+      *    * ----- <<      ECACOM03 SUB ERROR                 >> --- *
+             WHEN  "WECA0001"
+
+      *    * ----- <<      RTS     ERROR                      >> --- *
+             WHEN  "EX000003"
+               MOVE  EX0003-MSGBODY    TO  PSSENDMSGBODY
+      *         PERFORM  WXQSRBK
+               PERFORM  V3-POP-PRTMSGOUT
+
+      * Change Structure by Omarin 07/11/14 Start
+      *    * ----- <<      MQ      ERROR                      >> --- *
+
+      *       WHEN  "EX000100"
+      *       WHEN  "EX000103"
+      *         MOVE  "1"               TO  PSSENDEXPRESS
+      *         MOVE  WXQSCC            TO  EXWXQS-MSGBODY-1
+      *         MOVE  WXQSRC            TO  EXWXQS-MSGBODY-2
+      *         MOVE  WXQSMSG           TO  EXWXQS-MSGBODY-3
+      *         MOVE  EXWXQS-MSGBODY    TO  PSSENDMSGBODY
+      *         PERFORM  WXQSRBK
+      *         PERFORM  V3-POP-PRTMSGOUT
+      * Change Structure by Omarin 07/11/14 End
+
+      *    * ----- <<      WWWRECON SUB ERROR                 >> --- *
+             WHEN   "EX000144"
+               MOVE  "1"                            TO  PSSENDEXPRESS
+               MOVE  PRECONRTN-CD         TO  EX0144-MSGBODY-1
+               MOVE  PRECONSQLCODE       TO  EX0144-MSGBODY-2
+               MOVE  EX0144-MSGBODY  TO  PSSENDMSGBODY
+      *         PERFORM  WXQSRBK
+               PERFORM  V1-POPMSGOUT
+
+           END-EVALUATE
+
+           CONTINUE.
+       V0-900.
+           EXIT.
+
+      /
+       V1-POPMSGOUT          SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V1     POP MSGOUT                                   *
+      *    *                                                         *
+      *    ***********************************************************
+
+       V1-100.
+
+      * Change Structure by Omarin 07/11/14
+           DISPLAY "V1  START  WXQSTRMS=",WXQSTRMS.
+           DISPLAY "V1  START ACC-CLIENT=",ACC-CLIENT.
+           MOVE  "CPUSTCS1"            TO  PSSENDONODE
+      *     MOVE  WXQSTRMS              TO  PSSENDDNODE
+           MOVE  ACC-CLIENT            TO  PSSENDDNODE
+           MOVE  "ECA00500"            TO  PSSENDPGMID
+           PERFORM  X0-MSGOUT-PROCESS
+      *     PERFORM  Y0-ABEND-PROCESS
+           CONTINUE.
+       V1-900.
+           EXIT.
+
+      /
+       V2-PRTMSGOUT          SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V2     PRTMSGOUT                                    *
+      *    *                                                         *
+      *    ***********************************************************
+
+       V2-100.
+
+           DISPLAY "V2  START".
+
+           PERFORM  V9-WWWCOM92-CALL
+           IF  NOT (PCOM92RE-CO002  =  "7")
+               MOVE  "CPUSTCS1"        TO  PSSENDONODE
+               MOVE  "ECA00500"        TO  PSSENDPGMID
+               PERFORM  X0-MSGOUT-PROCESS
+           END-IF
+           PERFORM  Y0-ABEND-PROCESS
+           CONTINUE.
+       V2-900.
+           EXIT.
+
+      /
+       V3-POP-PRTMSGOUT      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V3     POP  PRTMSGOUT                               *
+      *    *                                                         *
+      *    ***********************************************************
+
+       V3-100.
+
+      * Change Structure by Omarin 07/11/14
+      *     DISPLAY "V3  START  WXQSTRMS=",WXQSTRMS.
+
+           MOVE  "CPUSTCS1"            TO  PSSENDONODE
+      *     MOVE  WXQSTRMS              TO  PSSENDDNODE
+           MOVE  ACC-CLIENT            TO  PSSENDDNODE
+           MOVE  "ECA00500"            TO  PSSENDPGMID
+           PERFORM  X0-MSGOUT-PROCESS
+
+      *     PERFORM  V9-WWWCOM92-CALL
+      *     IF  NOT (PCOM92RE-CO002  =  "7")
+      *         MOVE  "CPUSTCS1"        TO  PSSENDONODE
+      *         MOVE  "ECA00500"        TO  PSSENDPGMID
+      *         PERFORM  X0-MSGOUT-PROCESS
+      *     END-IF
+
+      *     PERFORM  Y0-ABEND-PROCESS
+           CONTINUE.
+       V3-900.
+           EXIT.
+
+      /
+       V9-WWWCOM92-CALL      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     V9     WWWCOM92  CALL                               *
+      *    *                                                         *
+      *    ***********************************************************
+
+       V9-100.
+
+      * Change Structure by Omarin 07/11/14 Start
+      *     DISPLAY "V9  START  WXQSTRMS=",WXQSTRMS.
+
+      *     MOVE  WXQSTRMS              TO  PCOM92CL-LO001
+      *     EXEC  SQL  EXECUTE
+      *       BEGIN
+      *            WWWCOM92(:PCOM92CL-LO001,
+      *                     :PCOM92LA-PR001,
+      *                     :PCOM92SE-PR001,
+      *                     :PCOM92RE-CO002);
+      *       END;
+      *     END-EXEC
+
+      *     DISPLAY "WWWCOM92  PCOM92RE-CO002=",PCOM92RE-CO002.
+
+      *     EVALUATE  PCOM92RE-CO002
+      *       WHEN  "0"
+      *       WHEN  "7"
+      *         CONTINUE
+      *       WHEN  "1"
+      *       WHEN  "2"
+      *         MOVE  PCOM92LA-PR001    TO  PSSENDDNODE
+      *       WHEN  "3"
+      *         MOVE  PCOM92SE-PR001    TO  PSSENDDNODE
+      *       WHEN  OTHER
+      *         MOVE  "EX000128"        TO  PSSENDMSGID
+      *         MOVE  "CPUSTCS1"        TO  PSSENDONODE
+      *         MOVE  WXQSTRMS          TO  PSSENDDNODE
+      *         MOVE  "ECA00500"        TO  PSSENDPGMID
+      *         PERFORM  X0-MSGOUT-PROCESS
+      *         PERFORM  Y0-ABEND-PROCESS
+      *     END-EVALUATE
+      * Change Structure by Omarin 07/11/14 Start
+           CONTINUE.
+       V9-900.
+           EXIT.
+
+      /
+       X0-MSGOUT-PROCESS     SECTION.
+      *    ************************************************************
+      *    *                                                          *
+      *    *     X0     MSGOUT  PROCESS                               *
+      *    *                                                          *
+      *    ************************************************************
+
+       X0-100.
+
+           DISPLAY "X0 START WXMSSEND PSSENDPGMID=",PSSENDPGMID.
+           DISPLAY "PSSENDONODE   = ",PSSENDONODE.
+           DISPLAY "PSSENDDNODE   = ",PSSENDDNODE.
+           DISPLAY "PSSENDPGMID   = ",PSSENDPGMID.
+           DISPLAY "PSSENDEXPRESS = ",PSSENDEXPRESS.
+           DISPLAY "PSSENDMSGID   = ",PSSENDMSGID.
+           DISPLAY "PSSENDMSGBODY = ",PSSENDMSGBODY.
+           DISPLAY "PSSENDRTNCODE = ",PSSENDRTNCODE.
+
+           CALL  "WXMSSEND"            USING  PSSENDONODE
+                                              PSSENDDNODE
+                                              PSSENDPGMID
+                                              PSSENDEXPRESS
+                                              PSSENDMSGID
+                                              PSSENDMSGBODY
+                                              PSSENDRTNCODE
+           CONTINUE.
+
+           DISPLAY "X0 END WXMSSEND PSSENDRTNCODE=",PSSENDRTNCODE.
+
+      * Cancel comment by Songpol (16-Sep-2016) for checking MQ -- S# *
+           IF NOT (PSSENDRTNCODE  =  ZERO)
+              PERFORM  Y0-ABEND-PROCESS
+      *----------------------------------------------------------------*
+      * Project Name : SPCS Revamp
+      * Reason : Convert to Linux - Add Period (ReConv 2nd)
+      * Update Date : 2016/11/12
+      * Reviser : Y.Fujita NSSOL Yawata
+      *----------------------------------------------------------------*
+      *    END-IF
+           END-IF.
+      * Cancel comment by Songpol (16-Sep-2016) for checking MQ -- E# *
+
+       X0-900.
+           EXIT.
+
+      /
+       Y0-ABEND-PROCESS      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     Y0     ABEND    PROCESS                             *
+      *    *                                                         *
+      *    ***********************************************************
+
+       Y0-100.
+
+           DISPLAY "Y0  START".
+
+           EXEC  SQL  ROLLBACK  RELEASE  END-EXEC
+           MOVE  "ECA00500"            TO  PUDUMPPGMID
+           CALL  "WXUDUMP"             USING  PUDUMPDUMPSTR
+                                              PUDUMPDUMPEND
+                                              PUDUMPPGMID
+                                              PUDUMPRTNCODE
+           MOVE  "9"                   TO  RETURN-CODE
+           STOP  RUN.
+       Y0-900.
+           EXIT.
+
+      * OMARIN fix no data found problem
+       Y1-ABEND-NODATAFOUND      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     Y0     ABEND    PROCESS                             *
+      *    *                                                         *
+      *    ***********************************************************
+
+       Y1-100.
+
+           DISPLAY "Y1  START".
+
+           EXEC  SQL  ROLLBACK  RELEASE  END-EXEC
+           MOVE  "ECA00500"            TO  PUDUMPPGMID
+           CALL  "WXUDUMP"             USING  PUDUMPDUMPSTR
+                                              PUDUMPDUMPEND
+                                              PUDUMPPGMID
+                                              PUDUMPRTNCODE
+           MOVE  "1"                   TO  RETURN-CODE
+	
+	   DISPLAY "PUDUMPPGMID=",PUDUMPPGMID.
+           DISPLAY "PUDUMPDUMPEND=",PUDUMPDUMPEND.
+	   DISPLAY "PUDUMPPGMID=",PUDUMPPGMID.
+	   DISPLAY "PUDUMPRTNCODE=",PUDUMPRTNCODE.
+	   DISPLAY "RETURN-CODE=",RETURN-CODE.
+
+	   STOP  RUN.
+       Y1-900.
+           EXIT.
+
+
+      /
+       Z0-AFTER-PROCESS      SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     Z0     AFTER  PROCESS                               *
+      *    *                                                         *
+      *    ***********************************************************
+
+       Z0-100.
+
+           DISPLAY "Z0  START".
+
+           EXEC  SQL  COMMIT  RELEASE  END-EXEC
+
+      * Change Structure by Omarin 07/11/14 Start
+      *** 11/DEC/2001 no.403 by Tasaneeya ****************************
+      *     DISPLAY "Z0  MCA003RE-TY001 " MCA003RE-TY001
+      *     EVALUATE MCA003RE-TY001
+      *     WHEN "1"
+      *         MOVE  "ECA08.sh"        TO   WXQSMODD
+      *         DISPLAY "Z0  ECA08.sh "
+      *     WHEN OTHER
+      *         MOVE  "ECA05.sh"        TO   WXQSMODD
+      *         DISPLAY "Z0  ECA05.sh "
+      *     END-EVALUATE
+
+      *     MOVE  "A"                   TO  WXQSMDSA
+      *     MOVE  "ECA00500"            TO  WXQSMODS
+      *     MOVE  "CSV1.mqm"            TO  WXQSTRMD
+      *    MOVE  "ECA05.sh"            TO  WXQSMODD
+      *     MOVE  MCA004ECAM0004        TO  WXQSDOUT
+      *    MOVE  23                    TO  WXQSDLEN
+      *     MOVE  24                    TO  WXQSDLEN
+      *** 11/DEC/2001 no.403 by Tasaneeya ****************************
+
+      *     PERFORM  WXQSREQ
+
+      *     DISPLAY "WXQSREQ  WXQSCC=",WXQSCC.
+
+      *     IF  NOT (WXQSCC             =  WXQS-INF-NORMAL)
+      *         MOVE  "EX000102"        TO  PSSENDMSGID
+      *         PERFORM  V0-MSG-DIVIDE
+      *         GO  TO  Z0-900
+      *     END-IF
+
+      *    MOVE  "0000"                TO  WXQSAPCD
+
+      *     PERFORM  WXQSEND
+
+      *     DISPLAY "WXQSEND  WXQSCC=",WXQSCC.
+
+      *     IF  NOT (WXQSCC             =  WXQS-INF-NORMAL)
+      *         MOVE  "EX000103"        TO  PSSENDMSGID
+      *         PERFORM  V0-MSG-DIVIDE
+      *     END-IF
+      * Change Structure by Omarin 07/11/14 End
+
+           CONTINUE.
+       Z0-900.
+           EXIT.
+
+      /
+       ERROR-PROC            SECTION.
+      *    ***********************************************************
+      *    *                                                         *
+      *    *     ERROR  PROC                                         *
+      *    *                                                         *
+      *    ***********************************************************
+
+       ERROR-PROC-100.
+      *    * ----- <<      RTS  ERROR  PROCESS                >> --- *
+       ENTRY  "ERROR-PROC-ECA00500"    USING  ERR-MSG
+           MOVE  ERR-MSG               TO  WWPROC-ERRMSG
+           MOVE  RETURN-CODE           TO  EX0003-MSGBODY-1
+           MOVE  "1"                   TO  PSSENDEXPRESS
+           MOVE  "EX000003"            TO  PSSENDMSGID
+           PERFORM  V0-MSG-DIVIDE
+           PERFORM  Y0-ABEND-PROCESS
+           CONTINUE.
+       ERROR-PROC-900.
+           EXIT.
+
+      * Change Structure by Omarin 07/11/14
+      */
+       COPY  "WXQSPROC.CPY".
+
+
