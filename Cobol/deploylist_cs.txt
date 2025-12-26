@@ -1,0 +1,6 @@
+MODIFY:
+src/server/Cobol/main/cs/ECA00900.pco
+src/server/Cobol/main/cs/ECA00500.pco
+DEPLOY:
+src/server/Cobol/main/cs/ECA00900.pco
+src/server/Cobol/main/cs/ECA00500.pco
