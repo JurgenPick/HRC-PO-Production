@@ -1437,7 +1437,11 @@
                    MOVE  "1" TO WK-CHK-TIS-NAME
       *----------show TIS-NAME only TIS case by Onuma T. 20100909 END.
                 ELSE
-                   MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
+      *----- 20260213 Incident support by Sahassawat IM.2567 -- S*
+      *            MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
+                   MOVE  "LABEL-PT-TIS"          TO  PBPOUTFORM-NAME
+                   MOVE  "1" TO WK-CHK-TIS-NAME
+      *----- 20260213 Incident support by Sahassawat IM.2567 -- E*
                 END-IF
       *--- 20251112 P/O determines by Sahassawat IM.2567 --E*
               END-IF
