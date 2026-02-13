@@ -1413,14 +1413,18 @@
       *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
            IF (BXX008GR-RE001 = "2" OR "3" OR "4") THEN
               IF (BXX008PR-CL001(1:1) = "B") THEN
-                   MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
+                 MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
               ELSE
-      *----- 20260213 Incident support by Sahassawat IM.2567 -- S*
+      *--- 20251112 P/O determines by Sahassawat IM.2567 --S*
+                IF WK-IS-COIL-PO = '1' THEN
                    MOVE  "LABEL-PT-TIS"          TO  PBPOUTFORM-NAME
       *----------show TIS-NAME only TIS case by Onuma T. 20100909 START
                    MOVE  "1" TO WK-CHK-TIS-NAME
       *----------show TIS-NAME only TIS case by Onuma T. 20100909 END.
-      *----- 20260213 Incident support by Sahassawat IM.2567 -- E*
+                ELSE
+                   MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
+                END-IF
+      *--- 20251112 P/O determines by Sahassawat IM.2567 --E*
               END-IF
            ELSE
               IF BXX001NE-DI044 = "1" THEN
@@ -3793,7 +3797,7 @@
       *------------------------------- 20/JUL/2000 by Sugiyama TO   -*
 
            END-EVALUATE
-      *    * -�iS-*
+      *    * -ï¿½iS-*
              DISPLAY  " MSG DATA -PSSENDONODE="       PSSENDONODE
              DISPLAY  "          -PSSENDDNODE="       PSSENDDNODE
              DISPLAY  "          -PSSENDPGMID="       PSSENDPGMID
@@ -3887,7 +3891,7 @@
       *    ***********************************************************
 
        V9-100.
-      *    * -�iS-*
+      *    * -ï¿½iS-*
              DISPLAY  " V9-100  ".
       *    * -----E-*
 
@@ -3931,7 +3935,7 @@
       *    ***********************************************************
 
        X0-100.
-      *    * -�iS-*
+      *    * -ï¿½iS-*
              DISPLAY  " X0-100  ".
       *    * -----E-*
 
@@ -3958,7 +3962,7 @@
       *    *                                                         *
       *    ***********************************************************
        Y0-100.
-      *    * -�iS-*
+      *    * -ï¿½iS-*
              DISPLAY  " Y0-100  ".
       *    * -----E-*
 
@@ -3981,7 +3985,7 @@
       *    ***********************************************************
 
        Z0-100.
-      *    * -�iS-*
+      *    * -ï¿½iS-*
              DISPLAY  " Z0-100  ".
       *    * -----E-*
 

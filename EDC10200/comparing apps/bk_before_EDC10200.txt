@@ -65,11 +65,8 @@
       ******-------------------------------------------------------***
        01          FILLER  PIC  X(24) VALUE "               WORK-AREA".
        01  WXBCP-WORK-AREA                 SYNC.
-      *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--Start
       * product name  *
-      *  03      WWXBCP-LA-PR001           PIC X(40) VALUE SPACE.
-         03      WWXBCP-LA-PR001           PIC X(50) VALUE SPACE.
-      *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--End
+         03      WWXBCP-LA-PR001           PIC X(40) VALUE SPACE.
       * specification  *
          03      WWXBCP-LA-PR004           PIC X(40) VALUE SPACE.
       * size           *
@@ -212,17 +209,8 @@
 
       *--- 20201126 TIS-QR by Onuma T.-- START ------------------------*
       * TIS QR   *
-         03      WWXBCP-TIS-QR             PIC X(100) VALUE SPACE.
+         03      WWXBCP-TIS-QR           PIC X(100) VALUE SPACE.
       *--- 20201126 TIS-QR by Onuma T.-- END --------------------------*
-      *--- 20251119 P/O Coil type by Sahassawat IM.2567 --S*
-         03      WWXBCP-PRODUCT-TIS        PIC X(50) VALUE SPACES.
-      *--- 20251119 P/O Coil type by Sahassawat IM.2567 --E*
-      *--- 20251112 P/O Coil type check flag by Sahassawat IM.2567 --S*
-       01  WK-PRODUCT-DISPLAY
-         03  WK-SEARCH-COUNT               PIC 9(02) VALUE ZERO.
-
-       01  WK-IS-COIL-PO                   PIC 9(01) VALUE ZERO.
-      *--- 20251112 P/O Coil type check flag by Sahassawat IM.2567 --E*
 
       *-- show TIS-NAME only TIS case by Onuma T. 20100909 START--------
        01  WK-CHK-TIS-NAME                 PIC X(01) VALUE "0".
@@ -292,12 +280,8 @@
       *01  PBPOUTSEND-DATA                 PIC X(850) VALUE SPACE.
       *-- 07/Jul/2013 Salakchit Memo. 1378 Start  ---------------------*
       *-- 20201210 TIS-QR by Onuma T. start
-      *01  PBPOUTSEND-DATA                 PIC X(950) VALUE SPACE.
+       01  PBPOUTSEND-DATA                 PIC X(950) VALUE SPACE.
       *-- 20201210 TIS-QR by Onuma T. end.
-      *--- 20251119 P/O Coil type by Sahassawat IM.2567 --S*
-       01  PBPOUTSEND-DATA                 PIC X(1100) VALUE SPACE.
-      *--- 20251119 P/O Coil type by Sahassawat IM.2567 --E*
-
       ** 24/Jan/2002 by dang***stop
       *DWWCOM01 PARAMATER  AREA                       16=
        01          FILLER  PIC  X(24) VALUE "           DWWCOM01-AREA".
@@ -1290,35 +1274,6 @@
                GO  TO  C11-900
            END-EVALUATE
 
-      *--- 20251112 Check coil is P/O type by Sahassawat IM.2567 --S*
-      *--- Check if coil is P/O type using EWWWCOM08 ---*
-       DISPLAY "========================================="
-       DISPLAY "DEBUG START: Label Selection"
-       DISPLAY "BXX008PA-CO001 = " BXX008PA-CO001
-       DISPLAY "BXX008PR-SP003 = " BXX008PR-SP003
-       DISPLAY "BXX008GR-RE001 = " BXX008GR-RE001
-       DISPLAY "BXX008PR-CL001 = " BXX008PR-CL001
-       DISPLAY "BXX001NE-DI044 = " BXX001NE-DI044
-
-      *--- Check if coil is P/O type using EWWWCOM08  ---*
-           EXEC SQL
-              SELECT EWWCOM08(:BXX008PR-SP003)
-                INTO :WK-IS-COIL-PO
-               FROM DUAL
-           END-EXEC.
-
-      *--- Handle SQL errors ---*
-           IF SQLCODE NOT = ZERO
-              DISPLAY "ERROR: EWWCOM08 function call failed"
-              DISPLAY "SQLCODE: " SQLCODE
-              MOVE "0" TO WK-IS-COIL-PO
-           END-IF.
-
-           DISPLAY "P/O Check Result: " WK-IS-COIL-PO
-                    " for PR-SP003: " BXX008PR-SP003
-           DISPLAY "========================================".
-      *--- 20251112 Check coil is P/O type by Sahassawat IM.2567 --E*
-
       *    * ----- << ADD  30/MAY/2000  SUGIYAMA  START >> --- *
       *    * ----- << MODIFY  06/JUN/2000  SUGIYAMA  START >> --- *
 
@@ -1413,14 +1368,12 @@
       *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
            IF (BXX008GR-RE001 = "2" OR "3" OR "4") THEN
               IF (BXX008PR-CL001(1:1) = "B") THEN
-                   MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
+                 MOVE  "LABEL-PT"              TO  PBPOUTFORM-NAME
               ELSE
-      *----- 20260213 Incident support by Sahassawat IM.2567 -- S*
-                   MOVE  "LABEL-PT-TIS"          TO  PBPOUTFORM-NAME
-      *----------show TIS-NAME only TIS case by Onuma T. 20100909 START
-                   MOVE  "1" TO WK-CHK-TIS-NAME
-      *----------show TIS-NAME only TIS case by Onuma T. 20100909 END.
-      *----- 20260213 Incident support by Sahassawat IM.2567 -- E*
+                 MOVE  "LABEL-PT-TIS"          TO  PBPOUTFORM-NAME
+      *--        -show TIS-NAME only TIS case by Onuma T. 20100909 START
+                 MOVE  "1" TO WK-CHK-TIS-NAME
+      *--        -show TIS-NAME only TIS case by Onuma T. 20100909 END.
               END-IF
            ELSE
               IF BXX001NE-DI044 = "1" THEN
@@ -1457,93 +1410,35 @@
       *--        -show TIS-NAME only TIS case by Onuma T. 20100909 END.
               ELSE
       *--- 28/APR/2002 TIS by Witoon ------------ END -----------------*
-      *--- 20251112 P/O determines by Sahassawat IM.2567 --S*
                  EVALUATE BXX004GR-CL001
                     WHEN  "1A"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-1A-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-1A" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-1A" TO  PBPOUTFORM-NAME
                     WHEN  "3A"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-3A-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-3A" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-3A" TO  PBPOUTFORM-NAME
                     WHEN  "4A"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-4A-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-4A" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-4A" TO  PBPOUTFORM-NAME
                     WHEN  "1B"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-1B-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-1B" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-1B" TO  PBPOUTFORM-NAME
                     WHEN  "3B"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-3B-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-3B" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-3B" TO  PBPOUTFORM-NAME
                     WHEN  "4B"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-4B-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-4B" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-4B" TO  PBPOUTFORM-NAME
                     WHEN  "1C"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-1C-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-1C" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-1C" TO  PBPOUTFORM-NAME
                     WHEN  "3C"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-3C-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-3C" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-3C" TO  PBPOUTFORM-NAME
                     WHEN  "4C"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-4C-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-4C" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-4C" TO  PBPOUTFORM-NAME
                     WHEN  "1D"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-1D-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-1D" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-1D" TO  PBPOUTFORM-NAME
                     WHEN  "3D"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-3D-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-3D" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-3D" TO  PBPOUTFORM-NAME
                     WHEN  "4D"
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-4D-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-4D" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-4D" TO  PBPOUTFORM-NAME
                     WHEN OTHER
-                          IF WK-IS-COIL-PO = '1' THEN
-                             MOVE  "LABEL-PT-TIS" TO  PBPOUTFORM-NAME
-                          ELSE
-                             MOVE  "LABEL-PT" TO  PBPOUTFORM-NAME
-                          END-IF
+                          MOVE  "LABEL-PT" TO  PBPOUTFORM-NAME
                  END-EVALUATE
-
-                 IF WK-IS-COIL-PO = '1' THEN
-                    MOVE  "1" TO WK-CHK-TIS-NAME
-                 END-IF
-      *--- 20251112 P/O determines by Sahassawat IM.2567 --E*
-              END-IF
+      *--- 28/APR/2002 TIS by Witoon ------------ START ---------------*
            END-IF.
       *--- 28/APR/2002 TIS by Witoon ------------ END -----------------*
 
@@ -1564,10 +1459,7 @@
       *     MOVE  54                  TO  PBPOUTDATA-CNT
       *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
       *-- 20201126 TIS-QR by Onuma T. STA.
-      *--- 20251112 Update new item by Sahassawat IM.2567 --S*
-      *    MOVE  55                  TO  PBPOUTDATA-CNT
-           MOVE  56                  TO  PBPOUTDATA-CNT
-      *--- 20251112 Update new item by Sahassawat IM.2567 --E*
+           MOVE  55                  TO  PBPOUTDATA-CNT
       *-- 20201126 TIS-QR by Onuma T. END.
 
       * inspection no.  *
@@ -1578,27 +1470,6 @@
 
       * product name  *
            MOVE    BXX008LA-PR001        TO  WWXBCP-LA-PR001
-      *--- 20251112 determines name display by Sahassawat IM.2567 --S*
-      *    IF WK-IS-COIL-PO = '1' THEN
-           IF WK-CHK-TIS-NAME = "1" THEN
-              INITIALIZE WK-SEARCH-COUNT
-              INSPECT BXX008LA-PR001 TALLYING WK-SEARCH-COUNT
-                      FOR ALL "Hot-Rolled"
-
-              IF WK-SEARCH-COUNT > ZERO
-      * Hot-Rolled products ? Use H1,NAME2 with c36
-                MOVE "Hot-Rolled Steel Wide Strip" TO WWXBCP-PRODUCT-TIS
-                DISPLAY "TIS-NAME : Hot-Rolled Steel Wide Strip "
-              ELSE
-      * Other products ? Use H87,NAME68 with c37
-                MOVE "Cold Rolled Wide Strip"      TO WWXBCP-PRODUCT-TIS
-                DISPLAY "TIS-NAME : Cold Rolled Wide Strip "
-              END-IF
-           ELSE
-              MOVE SPACE TO WWXBCP-PRODUCT-TIS
-              DISPLAY "TIS-NAME : SPACE (Non P/O)"
-           END-IF
-      *--- 20251112 determines name display by Sahassawat IM.2567 --E*
       * specification *
            MOVE    BXX008LA-PR004        TO  WWXBCP-LA-PR004
 
@@ -2385,9 +2256,6 @@
                     MOVE  "TIS 2012 CR 1-8"  TO  WWXBCP-LA-PR019
                  ELSE
       * --- 11/12/2002 Memo No.505 by chunee--------- End   --- *
-
-
-
       *       *- For CRS & GIS Secondary Coil -*
                     EVALUATE BXX008LA-PR004(1:4)
                        WHEN "SPCC"
@@ -2526,19 +2394,6 @@
                  END-IF
       * --- 11/12/2002 Memo No.505 by chunee--------- End   --- *
               END-IF
-      *--- 20251203 IM.2567 Support HRC P/O by Sahassawat O.--Start
-      *--- 20260210 IM.2567 Support HRC P/O Sec-C Sahassawat --Start
-      *       IF BXX008GR-RE001 = "2" THEN
-              IF BXX008GR-RE001 = "2" OR "3" THEN
-      *--- 20260210 IM.2567 Support HRC P/O Sec-C Sahassawat --End
-                   EVALUATE BXX001HC-SP001(1:3)
-                      WHEN "HAA"
-                           MOVE  "TIS 528 HR1"       TO WWXBCP-LA-PR019
-                      WHEN "HAP"
-                           MOVE  "TIS 1999 SAPH 440" TO WWXBCP-LA-PR019
-                   END-EVALUATE
-              END-IF
-      *--- 20251203 IM.2567 Support HRC P/O by Sahassawat O.--End
            ELSE
       *       *- For Primary Coil -*
               MOVE    BXX001LA-PR019        TO  WWXBCP-LA-PR019
@@ -2576,31 +2431,11 @@
                     DISPLAY  WWXBCP-TIS-QR
       *--- 20201126 TIS-QR by Onuma T. --END
                  ELSE
-      *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--Start
-                   IF (WWXBCP-LA-PR019(1:8) = "TIS 528")
-                     AND (WK-CHK-TIS-NAME = "1") THEN
-                     MOVE "TIS 528-2560" TO WWXBCP-TIS-NAME
-                     MOVE "https://appdb.tisi.go.th/Q/i.php?d=193323436"
-                     TO WWXBCP-TIS-QR
-                     DISPLAY  WWXBCP-TIS-QR
-                   ELSE
-      *--- 20251218 IM.2567 Support HRC P/O Sec B Sahassawat O.--Start
-                    IF (WWXBCP-LA-PR019(1:8) = "TIS 1999")
-                       AND (WK-CHK-TIS-NAME = "1") THEN
-                       MOVE "TIS 1999 SAPH 440" TO WWXBCP-TIS-NAME
-                    MOVE "https://appdb.tisi.go.th/Q/i.php?d=3356518519"
-                       TO WWXBCP-TIS-QR
-                       DISPLAY  WWXBCP-TIS-QR
-                    ELSE
-                       MOVE  SPACE  TO WWXBCP-TIS-NAME
+                    MOVE  SPACE  TO WWXBCP-TIS-NAME
       *--- 20201126 TIS-QR by Onuma T. --STA
-                       MOVE  SPACE  TO WWXBCP-TIS-QR
-                       DISPLAY  WWXBCP-TIS-QR
+                    MOVE  SPACE  TO WWXBCP-TIS-QR
+                    DISPLAY  WWXBCP-TIS-QR
       *--- 20201126 TIS-QR by Onuma T. --END
-                    END-IF
-      *--- 20251218 IM.2567 Support HRC P/O Sec B Sahassawat O.--End
-                   END-IF
-      *--- 20251111 IM.2567 Support HRC P/O by Sahassawat O.--END.
                  END-IF
               END-IF
            END-IF
@@ -2892,9 +2727,7 @@
       * 23/JUN/03 BY Salakchit  Memo. 619
             DISPLAY "before print WWXBCP-PA-SMALL="WWXBCP-PA-SMALL
               DISPLAY "before print WW0000-SIZE="WW0000-SIZE
-      *--- 20251112 Change item to display  by Sahassawat IM.2567 --S*
                STRING  WWXBCP-LA-PR001     "*"
-      *--- 20251112 Change item to display  by Sahassawat IM.2567 --E*
                        WWXBCP-LA-PR004     "*"
                        WWXBCP-LA-PR003     "*"
                        WWXBCP-PA-NO001     "*"
@@ -2956,18 +2789,13 @@
                        WWXBCP-SIZE         "*"
                        WWXBCP-REJ          "*"
       *-- 07/Jul/2013 Salakchit Memo. 1378 End    ---------------------*
-      *--- 20251118 Change item to display  by Sahassawat IM.2567 --S*
-                       WWXBCP-PRODUCT-TIS  "*"
-      *--- 20251118 Change item to display  by Sahassawat IM.2567 --E*
       *--- 20201126 TIS-QR by Onuma T. --STA
                        WWXBCP-TIS-QR       "*"
       *--- 20201126 TIS-QR by Onuma T. --END
+
                                            DELIMITED  BY  SIZE
                  INTO  PBPOUTSEND-DATA
                END-STRING
-
-      *DISPLAY for Logging
-             DISPLAY "PBPOUTSEND-DATA = [" PBPOUTSEND-DATA "]"
 
 
              DISPLAY  " WXBCPOUT PBPOUTPRINTER-ID="   PBPOUTPRINTER-ID
@@ -3793,7 +3621,7 @@
       *------------------------------- 20/JUL/2000 by Sugiyama TO   -*
 
            END-EVALUATE
-      *    * -�iS-*
+      *    * -Ã½Ä-S-*
              DISPLAY  " MSG DATA -PSSENDONODE="       PSSENDONODE
              DISPLAY  "          -PSSENDDNODE="       PSSENDDNODE
              DISPLAY  "          -PSSENDPGMID="       PSSENDPGMID
@@ -3887,7 +3715,7 @@
       *    ***********************************************************
 
        V9-100.
-      *    * -�iS-*
+      *    * -Ã½Ä-S-*
              DISPLAY  " V9-100  ".
       *    * -----E-*
 
@@ -3931,7 +3759,7 @@
       *    ***********************************************************
 
        X0-100.
-      *    * -�iS-*
+      *    * -Ã½Ä-S-*
              DISPLAY  " X0-100  ".
       *    * -----E-*
 
@@ -3958,7 +3786,7 @@
       *    *                                                         *
       *    ***********************************************************
        Y0-100.
-      *    * -�iS-*
+      *    * -Ã½Ä-S-*
              DISPLAY  " Y0-100  ".
       *    * -----E-*
 
@@ -3981,7 +3809,7 @@
       *    ***********************************************************
 
        Z0-100.
-      *    * -�iS-*
+      *    * -Ã½Ä-S-*
              DISPLAY  " Z0-100  ".
       *    * -----E-*
 
@@ -4043,4 +3871,3 @@
 
       *    * ----- <<      MACRO   PROCESS   CPY              >> --- *
            COPY  "WXQSPROC.CPY".
-
